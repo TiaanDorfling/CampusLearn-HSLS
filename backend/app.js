@@ -9,7 +9,8 @@ import path, { dirname } from "path";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
-import { fileURLToPath } from "url";
+import fs from "fs";
+import { fileURLToPath, pathToFileURL } from "url";
 
 // --- Loaders ---
 import { loadEnv } from "./config/loadEnv.js";
@@ -123,47 +124,57 @@ app.get("/healthz", (req, res) => {
 // ============================================================================
 import { Router } from "express";
 
-// helper to dynamically import route if exists
+/**
+ * Dynamically loads a route file from /routes.
+ * Supports .js, .routes.js, Route.js, Routes.js variations.
+ */
 async function loadRoute(name) {
-  const candidates = [
+  const variations = [
     `./routes/${name}.routes.js`,
     `./routes/${name}.route.js`,
     `./routes/${name}Routes.js`,
+    `./routes/${name}Route.js`,
     `./routes/${name}.js`,
   ];
-  for (const p of candidates) {
-    try {
-      const mod = await import(p);
-      if (mod?.default) return mod.default;
-    } catch {
-      // try next candidate
+
+  for (const rel of variations) {
+    const fullPath = path.join(__dirname, rel);
+    if (fs.existsSync(fullPath)) {
+      console.log(`[routes] Loaded: ${rel}`);
+      const routeModule = await import(pathToFileURL(fullPath));
+      return routeModule.default || routeModule;
     }
   }
-  console.warn(`[routes] No route file found for "${name}" (tried: ${candidates.join(", ")})`);
+
+  console.warn(
+    `[routes] ⚠️ No route file found for "${name}" (checked: ${variations.join(", ")})`
+  );
   return Router();
 }
 
-const indexRouter       = await loadRoute("index");
-const authRoutes        = await loadRoute("auth");
-const topicRoutes       = await loadRoute("topics");
-const forumRoutes       = await loadRoute("forum");
-const submissionsRoutes = await loadRoute("submissions");
-const resourcesRoutes   = await loadRoute("resources");
-const messagesRoutes    = await loadRoute("messages");
-const adminRoutes       = await loadRoute("admin");
-const calendarRoutes    = await loadRoute("calendar");
-const studentRoutes     = await loadRoute("student");
+// === Map of all known route prefixes ===
+const routeMap = {
+  index: "/",
+  auth: "/api/auth",
+  user: "/api/user",
+  student: "/api/student",
+  tutor: "/api/tutor",
+  topics: "/api/topics",
+  forum: "/api/forum",
+  question: "/api/questions",
+  messages: "/api/messages",
+  admin: "/api/admin",
+  calendar: "/api/calendar",
+  resources: "/api/resources",
+  submissions: "/api/submissions",
+  ai: "/api/ai",
+};
 
-app.use("/", indexRouter);
-app.use("/api/auth", authRoutes);
-app.use("/api/topics", topicRoutes);
-app.use("/api/forum", forumRoutes);
-app.use("/api/submissions", submissionsRoutes);
-app.use("/api/resources", resourcesRoutes);
-app.use("/api/messages", messagesRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/calendar", calendarRoutes);
-app.use("/api/student", studentRoutes);
+// Dynamically load & register each route
+for (const [name, base] of Object.entries(routeMap)) {
+  const routes = await loadRoute(name);
+  if (routes) app.use(base, routes);
+}
 
 // ============================================================================
 //  ERROR HANDLING
