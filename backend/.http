@@ -1,5 +1,5 @@
 ################################################################################
-# CampusLearn API Test Suite (.http)
+# CAMPUSLEARN FULL BACKEND TEST SUITE (.http)
 # Backend: http://localhost:5000
 ################################################################################
 
@@ -53,11 +53,11 @@ Content-Type: application/json
 
 ### Get Active Session
 GET {{baseUrl}}/api/auth/session
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Logout
 POST {{baseUrl}}/api/auth/logout
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 
 ################################################################################
@@ -66,12 +66,12 @@ Cookie: {{jwt}}
 
 ### Get My Student Profile
 GET {{baseUrl}}/api/student/me
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Update My Student Profile
 PUT {{baseUrl}}/api/student/me
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "phone": "0812345678",
@@ -94,12 +94,12 @@ Cookie: {{jwt}}
 
 ### Get My Tutor Profile
 GET {{baseUrl}}/api/tutor/me
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Update My Tutor Profile
 PUT {{baseUrl}}/api/tutor/me
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "bio": "Tutor for SEN381 and DBS200, passionate about helping students succeed.",
@@ -111,62 +111,121 @@ Cookie: {{jwt}}
   ]
 }
 
-### List Tutor’s Students
-GET {{baseUrl}}/api/tutor/68ef7cf258d652878d928866/students
-Cookie: {{jwt}}
+
+################################################################################
+# 4️⃣ TOPICS MODULE (Updated)
+################################################################################
+
+### Create a New Topic
+POST {{baseUrl}}/api/topics
+Content-Type: application/json
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+{
+  "title": "SEN381 – Software Architecture",
+  "description": "Discussion and help for software engineering patterns.",
+  "moduleCode": "SEN381"
+}
+
+### List All Topics
+GET {{baseUrl}}/api/topics
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+### Subscribe to a Topic (Student)
+# Replace with real topic _id from "List All Topics"
+POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/subscribe
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+### Unsubscribe from a Topic
+DELETE {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/unsubscribe
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+### Broadcast a Tutor Message
+POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/broadcast
+Content-Type: application/json
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+{
+  "message": "Reminder: Submit your SEN381 project proposal by Friday."
+}
+
+### Upload Resource to Topic
+POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/resource
+Content-Type: multipart/form-data; boundary=---------------------------735323031399963166993862150
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+-----------------------------735323031399963166993862150
+Content-Disposition: form-data; name="resourceFile"; filename="notes.pdf"
+Content-Type: application/pdf
+
+< backend\uploads\Notes.pdf >
+-----------------------------735323031399963166993862150--
+
+### List Uploaded Topic Resources
+GET {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/resources
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 
 ################################################################################
-# 4️⃣ FORUM MODULE
+# 5️⃣ FORUM MODULE
 ################################################################################
 
 ### Create Forum Category
 POST {{baseUrl}}/api/forum/categories
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "name": "SEN381 – Software Engineering",
   "description": "Discussion space for software architecture, testing, and design."
 }
 
-### Get Forum Categories
+### Get All Forum Categories
 GET {{baseUrl}}/api/forum/categories
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Create Forum Thread
 POST {{baseUrl}}/api/forum/threads
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
-  "categoryId": "68f3e59b342e22f2dcadc347",
+  "categoryId": "REPLACE_CATEGORY_ID",
   "title": "Understanding Layered Architecture Pattern"
 }
 
 ### Get Threads in Category
-GET {{baseUrl}}/api/forum/threads?category=68f3e59b342e22f2dcadc347
-Cookie: {{jwt}}
+GET {{baseUrl}}/api/forum/threads?category=REPLACE_CATEGORY_ID
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Create Forum Post
 POST {{baseUrl}}/api/forum/posts
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
-  "threadId": "68f3e5ba342e22f2dcadc34a",
-  "content": "Layered architecture divides the application into presentation, business, and data layers."
+  "threadId": "REPLACE_THREAD_ID",
+  "content": "Layered architecture divides the app into presentation, business, and data layers."
+}
+
+### Upvote a Post
+POST {{baseUrl}}/api/forum/posts/upvote
+Content-Type: application/json
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+
+{
+  "postId": "REPLACE_POST_ID"
 }
 
 
 ################################################################################
-# 5️⃣ PRIVATE MESSAGING
+# 6️⃣ PRIVATE MESSAGING
 ################################################################################
 
 ### Create Conversation (Student ↔ Tutor)
 POST {{baseUrl}}/api/messages/conversations
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "participants": [
@@ -177,46 +236,29 @@ Cookie: {{jwt}}
 
 ### List My Conversations
 GET {{baseUrl}}/api/messages/conversations
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
-### Send Message
-POST {{baseUrl}}/api/messages/68f3f91318dc582d695a0349
+### Send Message in Conversation
+POST {{baseUrl}}/api/messages/REPLACE_CONVERSATION_ID
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "text": "Hello! Could you help me with my SEN381 project structure?"
 }
 
 ### Get Messages in Conversation
-GET {{baseUrl}}/api/messages/68f3f91318dc582d695a0349
-Cookie: {{jwt}}
+GET {{baseUrl}}/api/messages/REPLACE_CONVERSATION_ID
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 ### Mark Message as Read
 PUT {{baseUrl}}/api/messages/read
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
-  "messageId": "REPLACE_WITH_MESSAGE_ID"
+  "messageId": "REPLACE_MESSAGE_ID"
 }
-
-
-################################################################################
-# 6️⃣ TOPICS & RESOURCES
-################################################################################
-
-### Upload Resource (for an existing Topic)
-POST {{baseUrl}}/api/topics/REPLACE_TOPIC_ID/resource
-Content-Type: multipart/form-data; boundary=---------------------------735323031399963166993862150
-Cookie: {{jwt}}
-
------------------------------735323031399963166993862150
-Content-Disposition: form-data; name="resourceFile"; filename="notes.pdf"
-Content-Type: application/pdf
-
-< /path/to/notes.pdf >
------------------------------735323031399963166993862150--
 
 
 ################################################################################
@@ -225,7 +267,7 @@ Content-Type: application/pdf
 
 POST {{baseUrl}}/api/ai/chat
 Content-Type: application/json
-Cookie: {{jwt}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
   "message": "Explain microservices vs layered architecture."
