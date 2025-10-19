@@ -2,6 +2,9 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import ChatbotPage from '../pages/chatbot/ChatbotPage';
+
 import PublicLayout from "../layouts/PublicLayout.jsx";
 import AppLayout from "../layouts/AppLayout.jsx";
 

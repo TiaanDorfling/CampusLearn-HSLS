@@ -1,0 +1,8 @@
+
+{
+  "name": "CampusLearn: Optimist Prime AI",
+  "description": "An AI chatbot mentor, Optimist Prime, for the CampusLearn platform. It provides academic support, study tips, and motivation with an inspiring and heroic tone to guide students towards success.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

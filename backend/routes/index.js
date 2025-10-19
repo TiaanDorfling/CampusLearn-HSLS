@@ -7,7 +7,7 @@ import { dirname } from 'path';
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
+const apiKey = process.env.GEMINI_API_KEY;
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'SEN381 backend' });
 });
