@@ -10,7 +10,7 @@ const ConversationSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, collection: "conversations" } // optional but explicit
 );
 
 const MessageSchema = new mongoose.Schema(
@@ -20,11 +20,16 @@ const MessageSchema = new mongoose.Schema(
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
       role: { type: String, enum: ["student", "tutor", "admin"], required: true },
     },
+    subject: { type: String, default: "" },
     text: { type: String, required: true },
     isReadBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
-  { timestamps: true }
+  { timestamps: true, collection: "privatemessages" } // ✅ match your Compass collection
 );
+
+// helpful index for queries we use
+ConversationSchema.index({ "participants.user": 1, updatedAt: -1 });
+MessageSchema.index({ conversation: 1, createdAt: -1 });
 
 export const Conversation = mongoose.model("Conversation", ConversationSchema);
 export const Message = mongoose.model("Message", MessageSchema);
