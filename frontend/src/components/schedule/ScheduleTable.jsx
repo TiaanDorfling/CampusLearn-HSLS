@@ -1,14 +1,24 @@
 import React from "react";
 
 /**
- * props.events = [
- *  { day: "Mon"|"Tue"|"Wed"|"Thu"|"Fri", start: "09:00", end: "10:30", title: "SEN381", location: "B201" }
- * ]
+ * props:
+ *  - events: [{ day, start, end, title, location }]
+ *  - startHour = 8, endHour = 18
+ *  - density: "normal" | "compact"  (compact = shorter rows)
+ *  - accent: boolean (use accent background for blocks)
  */
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-const HOURS = Array.from({ length: 11 }, (_, i) => 8 + i); // 08:00..18:00
 
-export default function ScheduleTable({ events = [] }) {
+export default function ScheduleTable({
+  events = [],
+  startHour = 8,
+  endHour = 18,
+  density = "normal",
+  accent = false,
+}) {
+  const HOURS = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  const rowH = density === "compact" ? 40 : 48; // px per hour
+
   return (
     <div className="rounded-xl border bg-white overflow-hidden">
       <div className="grid grid-cols-[80px,repeat(5,1fr)] border-b bg-primary/5 text-sm">
@@ -16,11 +26,11 @@ export default function ScheduleTable({ events = [] }) {
         {DAYS.map(d => <div key={d} className="px-2 py-2 font-medium text-center">{d}</div>)}
       </div>
 
-      <div className="grid grid-cols-[80px,repeat(5,1fr)] text-sm">
+      <div className="grid grid-cols-[80px,repeat(5,1fr)] text-sm relative">
         {/* time rail */}
         <div>
           {HOURS.map(h => (
-            <div key={h} className="h-12 border-b px-2 py-1 text-right text-xs text-primary/60">
+            <div key={h} className="border-b px-2 py-1 text-right text-xs text-primary/60" style={{ height: rowH }}>
               {String(h).padStart(2,"0")}:00
             </div>
           ))}
@@ -29,9 +39,11 @@ export default function ScheduleTable({ events = [] }) {
         {/* day columns */}
         {DAYS.map(day => (
           <div key={day} className="relative border-l">
-            {HOURS.map(h => <div key={h} className="h-12 border-b/50 border-b"></div>)}
+            {HOURS.map(h => (
+              <div key={h} className="border-b/50 border-b" style={{ height: rowH }} />
+            ))}
             {(events || []).filter(e => e.day === day).map((e, idx) => (
-              <Block key={idx} {...e} />
+              <Block key={idx} {...e} startHour={startHour} rowH={rowH} accent={accent} />
             ))}
           </div>
         ))}
@@ -40,18 +52,18 @@ export default function ScheduleTable({ events = [] }) {
   );
 }
 
-function Block({ start, end, title, location }) {
+function Block({ start, end, title, location, startHour, rowH, accent }) {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
-  const startMin = (sh - 8) * 60 + sm; // offset from 08:00
+  const startMin = (sh - startHour) * 60 + sm;
   const dur = (eh * 60 + em) - (sh * 60 + sm);
-  const top = (startMin / 60) * 48 / 1; // 48px per hour (h-12)
-  const height = (dur / 60) * 48;
+  const top = (startMin / 60) * rowH;
+  const height = Math.max((dur / 60) * rowH, 34);
 
   return (
     <div
-      className="absolute left-1 right-1 rounded-lg bg-accent/80 text-primary-900 shadow p-2"
-      style={{ top, height, minHeight: 36 }}
+      className={`absolute left-1 right-1 rounded-lg ${accent ? "bg-accent/90 text-primary-900" : "bg-lavender/70"} shadow p-2`}
+      style={{ top, height }}
     >
       <div className="text-xs font-semibold">{title}</div>
       <div className="text-[11px]">{start}–{end} • {location}</div>
