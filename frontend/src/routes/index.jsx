@@ -16,10 +16,22 @@ import SignUp from "../auth/SignUp.jsx";
 
 import CalendarHome from "../pages/calendar/CalendarHome.jsx";
 
-// Make sure these files exist with these exact names:
+// Role-specific HOME pages
+import StudentHome from "../pages/student/Home.jsx";
+import TutorHome   from "../pages/tutor/Home.jsx";
+import AdminHome   from "../pages/admin/Home.jsx";
+
+// Dashboards (optional, accessible via button)
 import StudentDashboard from "../pages/student/StudentDashboard.jsx";
 import TutorDashboard   from "../pages/tutor/TutorDashboard.jsx";
 import AdminDashboard   from "../pages/admin/AdminDashboard.jsx";
+
+// Messages Center
+import MessagesCenter from "../pages/messages/MessagesCenter.jsx";
+
+// Forum
+import ForumHome from "../pages/forum/ForumHome.jsx";
+import ThreadView from "../pages/forum/ThreadView.jsx";
 
 import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
@@ -35,17 +47,17 @@ function PublicOnly({ children }) {
     const u = getLocalUser();
     const a = JSON.parse(localStorage.getItem("cl_auth") || "null");
     authed = !!(u || a?.email || a?.user);
-  } catch { /* ignore */ }
+  } catch {}
   return authed ? <Navigate to="/app" replace /> : children;
 }
 
-/** Role-based landing under /app */
+/** Role-based landing under /app (send to HOME by role) */
 function PrivateIndex() {
   const u = getLocalUser();
   const role = String(u?.role || "").toLowerCase();
   if (role === "admin") return <Navigate to="admin" replace />;
   if (role === "tutor") return <Navigate to="tutor" replace />;
-  return <Navigate to="student" replace />; // default
+  return <Navigate to="student" replace />;
 }
 
 export default function AppRoutes() {
@@ -69,37 +81,47 @@ export default function AppRoutes() {
           </AuthGuard>
         }
       >
-        {/* Role-based index */}
+        {/* Role-based index (goes to each role's HOME) */}
         <Route index element={<PrivateIndex />} />
 
-        {/* Keep calendar if needed */}
+        {/* Calendar (optional) */}
         <Route path="calendar" element={<CalendarHome />} />
 
-        {/* Dashboards (role guarded) */}
+        {/* Role-gated HOME + Dashboard */}
         <Route element={<RoleGuard allow={["student"]} />}>
-          <Route path="student" element={<StudentDashboard />} />
+          <Route path="student" element={<StudentHome />} />
+          <Route path="student/dashboard" element={<StudentDashboard />} />
         </Route>
 
         <Route element={<RoleGuard allow={["tutor"]} />}>
-          <Route path="tutor" element={<TutorDashboard />} />
+          <Route path="tutor" element={<TutorHome />} />
+          <Route path="tutor/dashboard" element={<TutorDashboard />} />
         </Route>
 
         <Route element={<RoleGuard allow={["admin"]} />}>
-          <Route path="admin" element={<AdminDashboard />} />
+          <Route path="admin" element={<AdminHome />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
         </Route>
 
-        {/* Common aliases so links like "/app/dashboard" or "/dashboard" don't 404 */}
-        <Route path="dashboard" element={<PrivateIndex />} />
-        <Route path="home" element={<PrivateIndex />} />
+        {/* Messages (all roles) */}
+        <Route path="messages" element={<MessagesCenter />} />
+
+        {/* Forum (all roles) */}
+        <Route path="forum" element={<ForumHome />} />
+        <Route path="forum/:id" element={<ThreadView />} />
 
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />
 
-        {/* anything else under /app -> role landing */}
+        {/* Friendly aliases inside /app */}
+        <Route path="home" element={<PrivateIndex />} />
+        <Route path="dashboard" element={<PrivateIndex />} />
+
+        {/* Any other /app path -> role landing */}
         <Route path="*" element={<PrivateIndex />} />
       </Route>
 
-      {/* Top-level aliases that people often bookmark/use */}
+      {/* Top-level aliases */}
       <Route path="/dashboard" element={<Navigate to="/app" replace />} />
       <Route path="/home" element={<Navigate to="/app" replace />} />
 

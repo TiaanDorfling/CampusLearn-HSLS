@@ -1,11 +1,15 @@
 // frontend/src/pages/admin/AdminDashboard.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import BackHomeButton from "../../components/BackHomeButton.jsx";
 import Loader from "../../components/ui/Loader";
 import Empty from "../../components/ui/Empty";
 import Modal from "../../components/ui/Modal";
 import { listStudents, createStudent, updateStudent, deleteStudent } from "../../api/students";
 
 export default function AdminDashboard() {
+  const nav = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
@@ -84,25 +88,35 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto py-6 space-y-6">
-      <header className="flex items-center justify-between gap-3">
+      {/* Top toolbar: title + Back to Home + quick actions */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <p className="text-primary/70 text-sm">Manage students</p>
         </div>
-        <div className="flex items-center gap-2">
-          <form onSubmit={(e)=>{e.preventDefault(); refresh({ page:1, q });}} className="flex gap-2">
-            <input className="rounded border px-3 py-2 text-sm" placeholder="Search by name/email" value={q}
-                   onChange={(e)=>setQ(e.target.value)} />
-            <button className="px-3 py-2 rounded bg-accent text-primary-900">Search</button>
-          </form>
-          <button onClick={()=>setOpenNew(true)} className="px-3 py-2 rounded bg-primary text-white">Add student</button>
+        <div className="flex flex-wrap gap-2">
+          <BackHomeButton />
+          <button
+            onClick={() => nav("/app/messages")}
+            className="px-3 py-2 rounded border hover:bg-cream"
+            title="Go to Messages"
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => nav("/app/forum")}
+            className="px-3 py-2 rounded border hover:bg-cream"
+            title="Go to Forum"
+          >
+            Forum
+          </button>
         </div>
       </header>
 
       {error ? <div className="p-3 text-red-700 bg-red-50 border rounded">{error}</div> : null}
 
       {data.items?.length ? (
-        <div className="overflow-x-auto rounded-xl border">
+        <div className="overflow-x-auto rounded-xl border bg-white">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left border-b bg-primary/5">
@@ -123,8 +137,12 @@ export default function AdminDashboard() {
                   <td className="py-2 px-3">
                     <div className="flex gap-2">
                       <button className="px-2 py-1 rounded border" onClick={()=>setOpenEdit(s)}>Edit</button>
-                      <button className="px-2 py-1 rounded border border-red-500 text-red-600"
-                              onClick={()=>onDelete(s._id || s.id)}>Delete</button>
+                      <button
+                        className="px-2 py-1 rounded border border-red-500 text-red-600"
+                        onClick={()=>onDelete(s._id || s.id)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -135,7 +153,10 @@ export default function AdminDashboard() {
       ) : <Empty title="No students found" />}
 
       {/* Create Modal */}
-      <Modal open={openNew} onClose={()=>setOpenNew(false)} title="Add new student"
+      <Modal
+        open={openNew}
+        onClose={()=>setOpenNew(false)}
+        title="Add new student"
         footer={
           <>
             <button className="px-3 py-2 rounded border" onClick={()=>setOpenNew(false)}>Cancel</button>
@@ -143,7 +164,8 @@ export default function AdminDashboard() {
               {busy ? "Saving..." : "Create"}
             </button>
           </>
-        }>
+        }
+      >
         <form id="createStudent" onSubmit={onCreate} className="space-y-3">
           <label className="block text-sm">
             <span>Name</span>
@@ -167,7 +189,10 @@ export default function AdminDashboard() {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal open={!!openEdit} onClose={()=>setOpenEdit(null)} title="Edit student"
+      <Modal
+        open={!!openEdit}
+        onClose={()=>setOpenEdit(null)}
+        title="Edit student"
         footer={
           <>
             <button className="px-3 py-2 rounded border" onClick={()=>setOpenEdit(null)}>Cancel</button>
@@ -175,21 +200,35 @@ export default function AdminDashboard() {
               {busy ? "Saving..." : "Save"}
             </button>
           </>
-        }>
+        }
+      >
         {openEdit ? (
           <form id="editStudent" onSubmit={onUpdate} className="space-y-3">
             <label className="block text-sm">
               <span>Name</span>
-              <input name="name" className="mt-1 w-full rounded border px-3 py-2" defaultValue={openEdit.name} required />
+              <input
+                name="name"
+                className="mt-1 w-full rounded border px-3 py-2"
+                defaultValue={openEdit.name}
+                required
+              />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block text-sm">
                 <span>Year</span>
-                <input name="year" className="mt-1 w-full rounded border px-3 py-2" defaultValue={openEdit.year ?? ""} />
+                <input
+                  name="year"
+                  className="mt-1 w-full rounded border px-3 py-2"
+                  defaultValue={openEdit.year ?? ""}
+                />
               </label>
               <label className="block text-sm">
                 <span>Phone</span>
-                <input name="phone" className="mt-1 w-full rounded border px-3 py-2" defaultValue={openEdit.phone ?? ""} />
+                <input
+                  name="phone"
+                  className="mt-1 w-full rounded border px-3 py-2"
+                  defaultValue={openEdit.phone ?? ""}
+                />
               </label>
             </div>
           </form>

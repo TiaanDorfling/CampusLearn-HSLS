@@ -1,10 +1,14 @@
 // frontend/src/pages/tutor/TutorDashboard.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import BackHomeButton from "../../components/BackHomeButton.jsx";
 import Loader from "../../components/ui/Loader";
 import Empty from "../../components/ui/Empty";
 import { getMyTutor, getTutorStudents } from "../../api/tutors";
 
 export default function TutorDashboard() {
+  const nav = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [tutor, setTutor] = useState(null);
   const [error, setError] = useState("");
@@ -43,12 +47,33 @@ export default function TutorDashboard() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold">Tutor Dashboard</h1>
-        <p className="text-primary/70 text-sm">Hello, {tutor.name}</p>
+      {/* Top toolbar: title + Back to Home + quick actions */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Tutor Dashboard</h1>
+          <p className="text-primary/70 text-sm">Hello, {tutor.name}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <BackHomeButton />
+          <button
+            onClick={() => nav("/app/messages")}
+            className="px-3 py-1 rounded border hover:bg-cream"
+            title="Go to Messages"
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => nav("/app/forum")}
+            className="px-3 py-1 rounded border hover:bg-cream"
+            title="Go to Forum"
+          >
+            Forum
+          </button>
+        </div>
       </header>
 
-      <section className="rounded-xl border p-4">
+      <section className="rounded-xl border p-4 bg-white">
         <h3 className="font-semibold mb-2">Courses you teach</h3>
         {Array.isArray(tutor.courses) && tutor.courses.length ? (
           <ul className="text-sm list-disc pl-5 space-y-1">
@@ -59,15 +84,20 @@ export default function TutorDashboard() {
         ) : <Empty title="No assigned courses" />}
       </section>
 
-      <section className="rounded-xl border p-4">
+      <section className="rounded-xl border p-4 bg-white">
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-semibold">Students assigned to you</h3>
           <form onSubmit={onSearch} className="flex gap-2">
-            <input className="rounded border px-3 py-2 text-sm" placeholder="Search by name/email"
-                   value={q} onChange={(e)=>setQ(e.target.value)} />
+            <input
+              className="rounded border px-3 py-2 text-sm"
+              placeholder="Search by name/email"
+              value={q}
+              onChange={(e)=>setQ(e.target.value)}
+            />
             <button className="px-3 py-2 rounded bg-accent text-primary-900">Search</button>
           </form>
         </div>
+
         {list.items?.length ? (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-sm">
