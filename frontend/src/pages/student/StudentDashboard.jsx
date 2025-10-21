@@ -5,6 +5,7 @@ import AvatarPicker from "../../components/profile/AvatarPicker.jsx";
 import ScheduleTable from "../../components/schedule/ScheduleTable.jsx";
 import MarksGrid from "../../components/marks/MarksGrid.jsx";
 import { getMyStudent, updateMyStudent } from "../../api/students";
+import { Calendar, BookOpen, CheckCircle2, Clock, Bell, TrendingUp, FileText, AlertCircle, MessageSquare, MessageCircle, Users } from "lucide-react";
 import Loader from "../../components/ui/Loader";
 import Empty from "../../components/ui/Empty";
 
@@ -15,8 +16,9 @@ export default function StudentDashboard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [student, setStudent] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // local editable state
+  // editable fields local state
   const [form, setForm] = useState({
     phone: "",
     year: "",
@@ -108,24 +110,63 @@ export default function StudentDashboard() {
     } finally { setSaving(false); }
   }
 
+  // Mock data 
+  const currentCourses = student?.courses || [];
+  const completedCourses = []; // Add completed courses from API
+  const upcomingEvents = [
+    { id: 1, title: "Assignment Due: React Project", date: "2025-10-25", type: "assignment" },
+    { id: 2, title: "Midterm Exam: Database Systems", date: "2025-10-28", type: "exam" },
+    { id: 3, title: "Group Presentation", date: "2025-10-30", type: "presentation" },
+  ];
+  const recentGrades = [
+    { course: "Web Development", assignment: "Project 1", grade: "A-", date: "2025-10-15" },
+    { course: "Data Structures", assignment: "Quiz 3", grade: "B+", date: "2025-10-12" },
+  ];
+
+  // Forum notifications 
+  const forumNotifications = [
+    { id: 1, type: "reply", thread: "Help with React Hooks", author: "John Doe", time: "2 hours ago", unread: true },
+    { id: 2, type: "mention", thread: "Group Project Discussion", author: "Jane Smith", time: "5 hours ago", unread: true },
+    { id: 3, type: "reply", thread: "Database Assignment Help", author: "Mike Johnson", time: "1 day ago", unread: false },
+  ];
+
+  const unreadMessages = 3; // Replace with real count from API
+  const unreadForumNotifs = forumNotifications.filter(n => n.unread).length;
+
+  // Calendar state
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
+
+  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
   if (loading) return <Loader label="Fetching your student profile..." />;
   if (!student) return <Empty title="No student profile" hint="Ask admin to attach your user to a student record." />;
 
+  const stats = [
+    { label: "Current Courses", value: currentCourses.length, icon: BookOpen, color: "bg-primary" },
+    { label: "Completed", value: completedCourses.length, icon: CheckCircle2, color: "bg-accent" },
+    { label: "Upcoming Events", value: upcomingEvents.length, icon: Calendar, color: "bg-lavender" },
+    { label: "Average Grade", value: "B+", icon: TrendingUp, color: "bg-redbrown" },
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto py-6 space-y-6">
-      {/* Top toolbar */}
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="max-w-4xl mx-auto py-6 space-y-6">
+      <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Student Dashboard</h1>
-          <p className="text-primary/70 text-sm">
-            Welcome, {student.name || student.fullName || "Student"}.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <BackHomeButton />
-          <button onClick={() => nav("/app/messages")} className="px-3 py-1 rounded border hover:bg-cream">Messages</button>
-          <button onClick={() => nav("/app/forum")} className="px-3 py-1 rounded border hover:bg-cream">Forum</button>
+          <p className="text-primary/70 text-sm">Welcome, {student.name || student.fullName || "Student"}.</p>
         </div>
       </header>
 
@@ -133,26 +174,20 @@ export default function StudentDashboard() {
         <div className="rounded border border-red-400/60 p-3 text-sm text-red-700 bg-red-50">{error}</div>
       ) : null}
 
-      {/* Profile card */}
-      <section className="grid lg:grid-cols-3 gap-4">
-        <div className="rounded-xl border p-5 bg-white shadow-sm lg:col-span-1">
-          <div className="flex items-start justify-between">
-            <h3 className="font-semibold">Your profile</h3>
-          </div>
-          <div className="mt-4 space-y-4">
-            <AvatarPicker value={student.avatarUrl} onChange={setAvatarFile} />
-            <div className="text-sm space-y-1">
-              <p><span className="font-medium">Email:</span> {student.email}</p>
-              <p><span className="font-medium">Student #:</span> {student.studentNumber ?? "—"}</p>
-              <p><span className="font-medium">Year:</span> {student.year || "—"}</p>
-              <p><span className="font-medium">Phone:</span> {student.phone || "—"}</p>
-            </div>
+      <section className="grid md:grid-cols-2 gap-4">
+        <div className="rounded-xl border p-4">
+          <h3 className="font-semibold mb-2">Profile</h3>
+          <div className="text-sm space-y-1">
+            <p><span className="font-medium">Email:</span> {student.email}</p>
+            <p><span className="font-medium">Student #:</span> {student.studentNumber ?? "—"}</p>
+            <p><span className="font-medium">Year:</span> {student.year || "—"}</p>
+            <p><span className="font-medium">Phone:</span> {student.phone || "—"}</p>
           </div>
         </div>
 
-        <form onSubmit={onSave} className="rounded-xl border p-5 bg-white shadow-sm lg:col-span-2">
+        <form onSubmit={onSave} className="rounded-xl border p-4">
           <h3 className="font-semibold mb-2">Edit details</h3>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-3">
             <label className="block text-sm">
               <span>Phone</span>
               <input className="mt-1 w-full rounded border px-3 py-2" value={form.phone}
@@ -163,51 +198,31 @@ export default function StudentDashboard() {
               <input className="mt-1 w-full rounded border px-3 py-2" value={form.year}
                      onChange={(e)=>setForm({...form, year:e.target.value})}/>
             </label>
-            <label className="block text-sm sm:col-span-2">
+            <label className="block text-sm">
               <span>About</span>
               <textarea className="mt-1 w-full rounded border px-3 py-2" rows="3" value={form.about}
                         onChange={(e)=>setForm({...form, about:e.target.value})}/>
             </label>
-            <label className="block text-sm">
-              <span>Emergency contact name</span>
-              <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactName}
-                     onChange={(e)=>setForm({...form, emergencyContactName:e.target.value})}/>
-            </label>
-            <label className="block text-sm">
-              <span>Emergency contact phone</span>
-              <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactPhone}
-                     onChange={(e)=>setForm({...form, emergencyContactPhone:e.target.value})}/>
-            </label>
-          </div>
-
-          <div className="mt-4 flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm">
+                <span>Emergency contact name</span>
+                <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactName}
+                       onChange={(e)=>setForm({...form, emergencyContactName:e.target.value})}/>
+              </label>
+              <label className="block text-sm">
+                <span>Emergency contact phone</span>
+                <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactPhone}
+                       onChange={(e)=>setForm({...form, emergencyContactPhone:e.target.value})}/>
+              </label>
+            </div>
             <button className="px-4 py-2 rounded bg-accent text-primary-900 disabled:opacity-60" disabled={saving}>
               {saving ? "Saving..." : "Save changes"}
             </button>
-            <span className="text-xs text-primary/60">
-              Avatar will save once the backend upload endpoint is wired.
-            </span>
           </div>
         </form>
       </section>
 
-      {/* Schedule */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">This week’s schedule</h3>
-          <div className="text-xs text-primary/60">Times are campus local</div>
-        </div>
-        <ScheduleTable events={schedule} />
-      </section>
-
-      {/* Marks */}
-      <section className="space-y-3">
-        <h3 className="font-semibold">Marks & progress</h3>
-        <MarksGrid courses={marks} />
-      </section>
-
-      {/* Enrolments (keep your previous section – moved below, styled) */}
-      <section className="rounded-xl border p-5 bg-white shadow-sm">
+      <section className="rounded-xl border p-4">
         <h3 className="font-semibold mb-2">Enrolled Courses</h3>
         {Array.isArray(student.courses) && student.courses.length ? (
           <ul className="text-sm list-disc pl-5 space-y-1">
