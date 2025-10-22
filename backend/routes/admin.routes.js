@@ -231,4 +231,86 @@ router.delete("/courses/:id", aw(async (req, res) => {
   res.json({ ok: true });
 }));
 
+/* ---------------- ENROLLMENT (NEW) ---------------- */
+
+/**
+ * POST /api/admin/courses/:courseId/enroll
+ * Body: { studentId }
+ * Adds both sides (course.students[], student.courses[]) idempotently.
+ */
+router.post("/courses/:courseId/enroll", aw(async (req, res) => {
+  const { courseId } = req.params;
+  const { studentId } = req.body;
+
+  if (!studentId) return res.status(400).json({ error: "studentId is required" });
+  if (!mongoose.isValidObjectId(courseId) || !mongoose.isValidObjectId(studentId)) {
+    return res.status(400).json({ error: "invalid ids" });
+  }
+
+  const [course, student] = await Promise.all([
+    AdminCourse.findById(courseId),
+    AdminStudent.findById(studentId),
+  ]);
+  if (!course)  return res.status(404).json({ error: "Course not found" });
+  if (!student) return res.status(404).json({ error: "Student not found" });
+
+  await Promise.all([
+    AdminCourse.updateOne({ _id: course._id },  { $addToSet: { students: student._id } }),
+    AdminStudent.updateOne({ _id: student._id },{ $addToSet: { courses:  course._id } }),
+  ]);
+
+  const updated = await AdminCourse.findById(courseId).lean();
+  res.json({ ok: true, course: updated });
+}));
+
+/**
+ * Fallback variant used by client trySeq:
+ * POST /api/admin/students/:studentId/enroll
+ * Body: { courseId }
+ */
+router.post("/students/:studentId/enroll", aw(async (req, res) => {
+  const { studentId } = req.params;
+  const { courseId } = req.body;
+
+  if (!courseId) return res.status(400).json({ error: "courseId is required" });
+  if (!mongoose.isValidObjectId(courseId) || !mongoose.isValidObjectId(studentId)) {
+    return res.status(400).json({ error: "invalid ids" });
+  }
+
+  const [course, student] = await Promise.all([
+    AdminCourse.findById(courseId),
+    AdminStudent.findById(studentId),
+  ]);
+  if (!course)  return res.status(404).json({ error: "Course not found" });
+  if (!student) return res.status(404).json({ error: "Student not found" });
+
+  await Promise.all([
+    AdminCourse.updateOne({ _id: course._id },  { $addToSet: { students: student._id } }),
+    AdminStudent.updateOne({ _id: student._id },{ $addToSet: { courses:  course._id } }),
+  ]);
+
+  const updated = await AdminCourse.findById(courseId).lean();
+  res.json({ ok: true, course: updated });
+}));
+
+/**
+ * DELETE /api/admin/courses/:courseId/students/:studentId
+ * Removes the relation on both sides.
+ */
+router.delete("/courses/:courseId/students/:studentId", aw(async (req, res) => {
+  const { courseId, studentId } = req.params;
+
+  if (!mongoose.isValidObjectId(courseId) || !mongoose.isValidObjectId(studentId)) {
+    return res.status(400).json({ error: "invalid ids" });
+  }
+
+  await Promise.all([
+    AdminCourse.updateOne({ _id: courseId },  { $pull: { students: studentId } }),
+    AdminStudent.updateOne({ _id: studentId },{ $pull: { courses:  courseId } }),
+  ]);
+
+  const updated = await AdminCourse.findById(courseId).lean();
+  res.json({ ok: true, course: updated });
+}));
+
 export default router;

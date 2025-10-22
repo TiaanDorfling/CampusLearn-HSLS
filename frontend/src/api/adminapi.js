@@ -193,9 +193,70 @@ export async function deleteCourse(id){
   ]); return data;
 }
 
+/* -------------------- ENROLLMENT (NEW) -------------------- */
+// Enroll a student in a course
+export async function enrollStudentInCourse(courseId, studentId) {
+  const { data } = await trySeq([
+    // primary
+    () => api.post(`/admin/courses/${courseId}/enroll`, { studentId }),
+    // fallback via student
+    () => api.post(`/admin/students/${studentId}/enroll`, { courseId }),
+    // idempotent relation-URL fallback
+    () => api.put(`/admin/courses/${courseId}/students/${studentId}`),
+    // very generic legacy
+    () => api.post(`/courses/${courseId}/enroll`, { studentId }),
+  ]);
+  return data;
+}
+
+// Unenroll a student from a course
+export async function unenrollStudentFromCourse(courseId, studentId) {
+  const { data } = await trySeq([
+    // primary
+    () => api.delete(`/admin/courses/${courseId}/students/${studentId}`),
+    // alternative body-based endpoints
+    () => api.post(`/admin/courses/${courseId}/unenroll`, { studentId }),
+    () => api.post(`/admin/students/${studentId}/unenroll`, { courseId }),
+  ]);
+  return data;
+}
+
 const adminapi = {
-  students: { list: listStudents, get: getStudent, create: createStudent, update: updateStudent, remove: deleteStudent },
-  tutors:   { list: listTutors,   get: getTutor,   create: createTutor,   update: updateTutor,   remove: deleteTutor   },
-  courses:  { list: listCourses,  get: getCourse,  create: createCourse,  update: updateCourse,  remove: deleteCourse  },
+  students: {
+    list:   listStudents,
+    get:    getStudent,
+    create: createStudent,
+    update: updateStudent,
+    remove: deleteStudent
+  },
+  tutors:   {
+    list:   listTutors,
+    get:    getTutor,
+    create: createTutor,
+    update: updateTutor,
+    remove: deleteTutor
+  },
+  courses:  {
+    list:   listCourses,
+    get:    getCourse,
+    create: createCourse,
+    update: updateCourse,
+    remove: deleteCourse,
+    // NEW enrollment helpers exposed on the default object too
+    enroll:   enrollStudentInCourse,
+    unenroll: unenrollStudentFromCourse,
+  },
 };
+export async function listCoursesForStudent(studentId) {
+  if (!studentId) throw new Error("studentId is required");
+  const { data } = await trySeq([
+    () => api.get(`/admin/students/${studentId}/courses`),
+    () => api.get(`/students/${studentId}/courses`),
+    () => api.get(`/admin/courses`, { params: { student: studentId } }),
+    () => api.get(`/courses`,       { params: { student: studentId } }),
+  ]);
+  // If backend returns a bare array, wrap it like other list calls
+  return Array.isArray(data) ? { items: data, page: 1, total: data.length } : data;
+}
+
 export default adminapi;
