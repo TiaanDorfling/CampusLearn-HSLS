@@ -10,7 +10,7 @@ export async function getStudentHome() {
 
 // Fallbacks you can use if you prefer separate endpoints:
 export async function getMySchedule() {
-  const r = await fetch("/api/schedule/me", { credentials: "include" });
+  const r = await fetch("/api/schedule", { credentials: "include" });
   if (!r.ok) throw new Error("Failed to load schedule");
   return r.json(); // { events: [...] }
 }
