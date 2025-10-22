@@ -67,43 +67,45 @@ export default function TutorHome() {
   return (
     <div className="space-y-6">
       {/* HERO */}
-      <section
-        className="
-          rounded-2xl p-6 md:p-8
-          bg-white
-          border border-primary/10 shadow-sm
-          bg-[linear-gradient(90deg,rgba(185,174,229,0.6),rgba(255,243,224,0.7),white)]
-        "
-      >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-heading text-primary">
-              Welcome back, Tutor 👋
-            </h1>
-            <p className="text-primary/70 mt-1">
-              Manage your sessions, engage with students, and monitor class progress.
-            </p>
-          </div>
+<section
+  className="
+    rounded-2xl p-6 md:p-8
+    bg-white
+    border border-primary/10 shadow-sm
+    bg-[linear-gradient(90deg,rgba(185,174,229,0.6),rgba(255,243,224,0.7),white)]
+  "
+>
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 className="text-2xl md:text-3xl font-heading text-primary">
+        Welcome back, Tutor 👋
+      </h1>
+      <p className="text-primary/70 mt-1">
+        Manage your sessions, engage with students, and monitor class progress.
+      </p>
+    </div>
 
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
-            <Stat label="Today" value={`${countToday(schedule)} sessions`} />
-            {unread.length > 0 && (
-              <Stat label="Unread" value={`${unread.length} msgs`} onClick={() => setDrawer(true)} />
-            )}
-            <Stat label="Students" value="—" />
-          </div>
-        </div>
+    {/* Quick stats */}
+    <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
+      <Stat label="Today" value={`${countToday(schedule)} sessions`} />
+      {unread.length > 0 && (
+        <Stat label="Unread" value={`${unread.length} msgs`} onClick={() => setDrawer(true)} />
+      )}
+      <Stat label="Students" value="—" />
+    </div>
+  </div>
 
-        {/* Quick actions */}
-        <div className="mt-5 flex flex-wrap gap-2">
-          <QuickAction onClick={() => nav("/app/tutor/dashboard")} label="Open Dashboard" />
-          <QuickAction onClick={() => nav("/app/messages")} label="Messages" />
-          <QuickAction onClick={() => nav("/app/forum")} label="Forum" />
-          <QuickAction onClick={() => nav("/app/settings")} label="Settings" />
-        </div>
+  {/* Quick actions */}
+  <div className="mt-5 flex flex-wrap gap-2">
+    <QuickAction onClick={() => nav("/app/tutor/dashboard")} label="Open Dashboard" />
+    <QuickAction onClick={() => nav("/app/messages")} label="Messages" />
+    <QuickAction onClick={() => nav("/app/forum")} label="Forum" />
+    <QuickAction onClick={() => nav("/app/settings")} label="Settings" />
+  </div>
+</section> 
 
-       {/* Tutoring Resources & Tips Section */}
+
+{/* Tutoring Resources & Tips Section */}
 <section className="mt-8 bg-white/70 border border-primary/10 rounded-2xl p-6 shadow-sm">
   <h2 className="text-xl font-semibold text-primary mb-3">✨ Tutoring Tips & Resources</h2>
 
