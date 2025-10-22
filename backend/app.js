@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "url";
 import { loadEnv } from "./config/loadEnv.js";
 import { connectDB } from "./config/db.js";
 
-// Load environment variables first
+// Load env first
 loadEnv();
 
 // Register Mongoose models BEFORE routes 
@@ -20,12 +20,14 @@ import "./model/TutorModel.js";
 import "./model/StudentModel.js";
 import "./model/AIChatBot.js";
 import "./model/Forum.js";
-import "./model/Notification.js";
+import "./model/NotificationService.js";
 import "./model/privateMessage.js";
 import "./model/QuestionModel.js";
 import "./model/Resource.js";
 import "./model/Response.js";
 import "./model/Topic.js";
+import "./model/Submission.js";
+import "./model/CalendarEvent.js";
 
 // Connect to MongoDB
 await connectDB(process.env.MONGO_URI);
@@ -37,10 +39,17 @@ app.set("trust proxy", true);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// --- Ensure upload dirs exist (no-ops if present) ---
+try {
+  fs.mkdirSync(path.join(__dirname, "..", "uploads", "topic-resources"), { recursive: true });
+} catch (e) {
+  console.warn("Could not ensure uploads folder:", e?.message);
+}
+
 // MIDDLEWARE
 if (process.env.NODE_ENV !== "production") app.use(morgan("dev"));
 
-// CORS CONFIG
+// CORS
 const allow =
   (process.env.CLIENT_ORIGIN || "http://localhost:5173")
     .split(",")
@@ -64,6 +73,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 
+// Optional request tracing
 if (process.env.REQUEST_TRACE === "1") {
   app.use((req, _res, next) => {
     console.log("→", req.method, req.originalUrl);
@@ -71,7 +81,7 @@ if (process.env.REQUEST_TRACE === "1") {
   });
 }
 
-// Rate limiting (optional)
+// Rate limiting (simple, safe)
 try {
   const rateLimit = (await import("./middleware/rateLimit.js")).default;
   app.use(rateLimit);
@@ -79,7 +89,7 @@ try {
   console.warn("[warn] rateLimit middleware missing, continuing without it");
 }
 
-// STATIC FILES + HEALTH CHECK
+// STATIC + HEALTH
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
@@ -114,16 +124,15 @@ async function loadRoute(name) {
       return routeModule.default || routeModule;
     }
   }
-  console.warn(`[routes] ⚠️ No route file found for "${name}" (checked: ${variations.join(", ")})`);
+  console.warn(`[routes] ⚠️ No route file found for "${name}" (${variations.join(", ")})`);
   return Router();
 }
 
-// Map of all known route prefixes 
 const routeMap = {
   index: "/",
   auth: "/api/auth",
   user: "/api/user",
-  users: "/api/users",          // ← added
+  users: "/api/users",
   student: "/api/student",
   tutor: "/api/tutor",
   topics: "/api/topics",
@@ -140,7 +149,6 @@ const routeMap = {
   health: "/api/health",
 };
 
-// Dynamically load & register each route
 for (const [name, base] of Object.entries(routeMap)) {
   try {
     const routes = await loadRoute(name);

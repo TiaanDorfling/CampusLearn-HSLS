@@ -28,10 +28,9 @@ const topicSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔎 Text index for search
+// 🔎 full‐text search
 topicSchema.index({ title: "text", body: "text", tags: "text" });
 
-// 🔧 Instance methods
 topicSchema.methods.addSubscriber = async function (userId) {
   if (!this.subscribers.find((s) => s.toString() === userId.toString())) {
     this.subscribers.push(userId);

@@ -3,7 +3,8 @@ import express from "express";
 import mongoose from "mongoose";
 import { Conversation, Message } from "../model/privateMessage.js";
 import { auth } from "../middleware/auth.js";
-import Notification from "../model/Notification.js";
+import User from "../model/UserModel.js";
+import Notification from "../model/Notification.js"; // <-- ensure this exists
 
 const router = express.Router();
 
@@ -12,7 +13,9 @@ function normalize(m, meId) {
   return {
     ...m,
     body: m.text,
-    from: senderUser ? { _id: senderUser._id, name: senderUser.name, email: senderUser.email } : null,
+    from: senderUser
+      ? { _id: senderUser._id, name: senderUser.name, email: senderUser.email }
+      : null,
     fromEmail: senderUser?.email || null,
     meId,
   };
@@ -75,6 +78,15 @@ router.post("/", auth(true), async (req, res) => {
       return res.status(400).json({ error: "toUserId and body are required" });
     }
 
+    // Ensure recipient exists (helps build a better notification)
+    const recipient = await User.findById(toUserId).select("_id name email").lean();
+    if (!recipient) {
+      return res.status(404).json({ error: "Recipient user not found" });
+    }
+
+    // Grab sender info for a friendly notification message
+    const me = await User.findById(req.user._id).select("name email").lean();
+
     const convo = await findOrCreateDM(req.user, toUserId);
 
     const created = await Message.create({
@@ -82,25 +94,42 @@ router.post("/", auth(true), async (req, res) => {
       sender: { user: req.user._id, role: req.user.role },
       subject: subject || "",
       text: body,
-      isReadBy: [req.user._id], // sender has read by default
+      isReadBy: [req.user._id], // sender has read their own message
     });
 
-    // Notify recipient
-    await Notification.create({
-      user: toUserId,
-      type: "message",
-      title: subject || "New private message",
-      text: body.slice(0, 140),
-      data: { conversationId: String(convo._id), messageId: String(created._id) },
-      read: false,
-    });
+    // Update "last activity" for sort order
+    await Conversation.updateOne(
+      { _id: convo._id },
+      { $set: { updatedAt: new Date() } }
+    );
+
+    // --- Create recipient notification (robust payload) ---
+    // Schema expectations (already in your project): userId, message, type, read, link, meta
+    try {
+      const preview = body.trim().replace(/\s+/g, " ").slice(0, 120);
+      await Notification.create({
+        userId: recipient._id,
+        type: "pm:new",
+        message:
+          `${me?.name || me?.email || "Someone"} sent you a message` +
+          (preview ? `: "${preview}"` : ""),
+        link: `/app/messages?c=${convo._id}`,
+        meta: {
+          conversationId: convo._id,
+          messageId: created._id,
+          fromUserId: req.user._id,
+          subject: subject || "",
+        },
+      });
+    } catch (nerr) {
+      // Don’t block PM on notification failure — just log details
+      console.error("[PM] Notification create failed:", nerr);
+    }
 
     // refetch with populate so UI immediately sees "from"
     const doc = await Message.findById(created._id)
       .populate("sender.user", "name email")
       .lean();
-
-    await Conversation.updateOne({ _id: convo._id }, { $set: { updatedAt: new Date() } });
 
     res.status(201).json({ message: normalize(doc, req.user._id) });
   } catch (err) {

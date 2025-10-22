@@ -1,23 +1,45 @@
-# ============================================================================
-# CampusLearn Backend API – COMPLETE Test Suite
-# Updated: 2025-10-22  (matches current backend)
-# Requires: server running at http://127.0.0.1:5000
+# =============================================================================
+# CampusLearn Backend API – Full Test Suite (VS Code REST Client / HTTPYac)
+# Updated: 2025-10-22
 # Notes:
-#  - This suite uses cookie-based auth (jwt cookie). Each login captures a cookie
-#    into a variable for subsequent calls.
-#  - Domains enforced:
-#       student  → @student.belgiumcampus.ac.za
-#       tutor/admin → @belgiumcampus.ac.za
-# ============================================================================
+#  • This suite assumes ALL roles may use the campus *student* email domain,
+#    which matches your current UserModel regex.
+#  • Cookies are captured automatically after login.
+#  • IDs are captured from responses and reused later.
+#  • For file uploads, ensure the file path exists on disk.
+# =============================================================================
 
 @host = http://127.0.0.1:5000
 @base = {{host}}/api
-@ct = application/json
+@json = application/json
 
-### --------------------------------------------------------------------------
-### 0. Health & Diagnostics
-### --------------------------------------------------------------------------
+@student_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEzMzA1NSwiZXhwIjoxNzYxMTM2NjU1fQ.HicmA99WSPG2W96uNv_Kr1RarDKBz5W5vYphqBkvQp0
+@student_id = 68f8969835392717ca2b5d13
 
+@tutor_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4YzU5NzA5ZWFlMjhkZjM5MzRhZWQiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMzQwNjQsImV4cCI6MTc2MTEzNzY2NH0.EBaYKM-FpBzEnawhPkkwo1fRMKo-np4ymOc8DlKtl38
+@tutor_id = 68f8c59709eae28df3934aed
+
+@admin_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4YzdjZjA5ZWFlMjhkZjM5MzRiMmEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMzQ1NTksImV4cCI6MTc2MTEzODE1OX0.J9SeWEESXaM18-ippDyD3F6RDrkWhW7ZvMVwfXRCR4I
+@admin_id = 68f8c7cf09eae28df3934b2a
+
+@topic_id = 68f8c2d609eae28df3934ad0
+
+@forum_category_id = 68f8c34109eae28df3934ad8
+@forum_thread_id = 68f8c37809eae28df3934ada
+
+@question_id = 68f8c3e509eae28df3934ae0
+
+@pm_message_id = 68f8c67409eae28df3934b09
+
+@notification_id = 68f8c67409eae28df3934b0c
+
+@submission_id = 68f8c53509eae28df3934ae8
+
+@calendar_event_id = 68f8c75109eae28df3934b1d
+###
+# ┌───────────────────────────────────────────────────────────────────────────┐
+# │ 0) HEALTH + DIAGNOSTICS                                                   │
+# └───────────────────────────────────────────────────────────────────────────┘
 GET {{host}}/healthz
 
 ###
@@ -25,16 +47,18 @@ GET {{base}}/health
 
 ###
 GET {{base}}/index
-### (if you want to see env keys)
+# (expected 404 – route not defined intentionally)
+
+###
 GET {{base}}/health/env-keys
 
-### --------------------------------------------------------------------------
-### 1. AUTH
-### --------------------------------------------------------------------------
+################################################################################
+# 1) AUTHENTICATION – Register 3 users (student, tutor, admin) + log them in  #
+################################################################################
 
-# Register Student
+### Register Student
 POST {{base}}/auth/register
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
   "name": "Alice Student",
@@ -43,364 +67,397 @@ Content-Type: {{ct}}
   "role": "student"
 }
 
-###
-
-# Register Tutor
+### Register Tutor
 POST {{base}}/auth/register
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
-  "name": "John Doe",
-  "email": "john.doe@belgiumcampus.ac.za",
-  "password": "Password123!",
+  "name": "Tom Tutor",
+  "email": "tom.tutor@student.belgiumcampus.ac.za",
+  "password": "Tutor123!",
   "role": "tutor"
 }
 
-###
-
-# Register Admin
+### Register Admin
 POST {{base}}/auth/register
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
-  "name": "Jane Admin",
-  "email": "jane@admin.campuslearn.ac.za",
-  "password": "Password123!",
+  "name": "Ada Admin",
+  "email": "ada.admin@student.belgiumcampus.ac.za",
+  "password": "Admin123!",
   "role": "admin"
 }
 
-###
-
-# Login Student
+### Login (Student) -> capture cookie + id
 POST {{base}}/auth/login
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
   "email": "alice.student@student.belgiumcampus.ac.za",
   "password": "Password123!"
 }
 
-###
-
-# Login Tutor
+### Login (Tutor) -> capture cookie + id
 POST {{base}}/auth/login
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
-  "email": "bob.tutor@belgiumcampus.ac.za",
-  "password": "Password123!"
+  "email": "tom.tutor@student.belgiumcampus.ac.za",
+  "password": "Tutor123!"
 }
 
-###
-
-# Login Admin
+### Login (Admin) -> capture cookie + id
 POST {{base}}/auth/login
-Content-Type: {{ct}}
+Content-Type: {{json}}
 
 {
-  "email": "cara.admin@belgiumcampus.ac.za",
-  "password": "Password123!"
+  "email": "ada.admin@student.belgiumcampus.ac.za",
+  "password": "Admin123!"
 }
 
-###
-
-# Validate Session (student)
+### Validate session (student)
 GET {{base}}/auth/session
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Cookie: {{student_cookie}}
 
-###
-
-# Logout (student)
+### Logout (student)
 POST {{base}}/auth/logout
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Cookie: {{student_cookie}}
 
-### --------------------------------------------------------------------------
-### 2. USERS (read-only list for now; admin management via /api/admin)
-### --------------------------------------------------------------------------
+### Re-login (student) to proceed with tests
+POST {{base}}/auth/login
+Content-Type: {{json}}
 
-# List users (public read; your /api/users uses auth(false))
+{
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!"
+}
+
+################################################################################
+# 2) USER + ADMIN                                                              #
+################################################################################
+
+### List Users (open – auth optional in your users.js)
 GET {{base}}/users?limit=50
 
-### --------------------------------------------------------------------------
-### 3. STUDENT PROFILE
-### --------------------------------------------------------------------------
+### Update MY profile (student)
+PUT {{base}}/user/update-user
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
-# Create/Update my student profile
+{
+  "name": "Alice S. (updated)"
+}
+
+### Admin – Update tutor name
+PUT {{base}}/user/update/{{tutor_id}}
+Cookie: {{admin_cookie}}
+Content-Type: {{json}}
+
+{
+  "name": "Tom Tutor (updated by admin)"
+}
+
+### Admin – Delete (example) – NO-OP by default (uncomment to test)
+# DELETE {{base}}/user/delete/{{student_id}}
+# Cookie: {{admin_cookie}}
+
+################################################################################
+# 3) STUDENT + TUTOR PROFILES                                                  #
+################################################################################
+
+### Student – upsert my student profile
 PUT {{base}}/student/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-Content-Type: application/json
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "studentNumber": "S1002003",
+  "studentNumber": "S1234567",
   "year": "3",
-  "phone": "0123456789",
-  "about": "Enjoys databases and web dev",
-  "emergencyContact": { "name": "Parent", "phone": "0987654321" }
+  "phone": "+27 555 1111",
+  "about": "Interested in web dev and databases.",
+  "emergencyContact": { "name": "Mom", "phone": "+27 555 2222" }
 }
 
-###
-
-# Get my student profile
+### Student – get my profile
 GET {{base}}/student/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Cookie: {{student_cookie}}
 
-### --------------------------------------------------------------------------
-### 4. TUTOR PROFILE + STUDENTS LIST
-### --------------------------------------------------------------------------
-
-# Create/Update my tutor profile
+### Tutor – upsert my tutor profile
 PUT {{base}}/tutor/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
-Content-Type: {{ct}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
 
 {
-  "bio": "Web and DB tutor",
-  "phone": "0212345678",
-  "assignedModules": ["SEN381", "DBS200"],
-  "tutorTopics": ["React", "MongoDB"]
+  "bio": "Senior tutor for SEN381.",
+  "phone": "+27 555 3333",
+  "assignedModules": ["SEN381","DBS200"],
+  "tutorTopics": ["Web Dev", "Databases"]
 }
 
-###
-
-# Get my tutor profile
+### Tutor – get my profile
 GET {{base}}/tutor/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Cookie: {{tutor_cookie}}
 
-###
+### Tutor – list students (search)
+GET {{base}}/tutor/{{tutor_id}}/students?page=1&q=
+Cookie: {{tutor_cookie}}
 
-# List students for a tutor (replace {{tutorId}} with _id from previous call)
-GET {{base}}/tutor/68f89931d87ae1274c6d1874/students?page=1&q=
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+################################################################################
+# 4) TOPICS + RESOURCES + BROADCASTS                                           #
+################################################################################
 
-### --------------------------------------------------------------------------
-### 5. TOPICS
-### --------------------------------------------------------------------------
-
-# Create topic (any logged-in user; you can restrict later)
+### Create Topic (authenticated user)
 POST {{base}}/topics
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
-Content-Type: {{ct}}
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "title": "SEN381 – Software Engineering",
-  "description": "Questions, resources, and announcements for SEN381.",
-  "moduleCode": "SEN381",
-  "tags": ["engineering", "design"]
+  "title": "Business Management 381 - BIM381",
+  "description": "General discussion, resources, and Q&A.",
+  "moduleCode": "BIM381",
+  "tags": ["management","design","patterns"]
 }
 
-###
+### List Topics (search)
+GET {{base}}/topics?keyword=management
+Cookie: {{student_cookie}}
 
-# List topics
-GET {{base}}/topics
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+### Subscribe to Topic
+POST {{base}}/topics/{{topic_id}}/subscribe
+Cookie: {{student_cookie}}
 
-###
+### Unsubscribe from Topic (optional)
+# DELETE {{base}}/topics/{{topic_id}}/unsubscribe
+# Cookie: {{student_cookie}}
 
-# Subscribe to a topic (replace {{topicId}})
-POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/subscribe
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+### Upload Resource to Topic (multipart)
+# Ensure this file exists relative to backend/ (change path if needed)
+POST {{base}}/topics/{{topic_id}}/resource
+Cookie: {{tutor_cookie}}
+Content-Type: multipart/form-data; boundary=boundary42
 
-###
-
-# Unsubscribe
-DELETE {{base}}/topics/68f401516e1bb3dd5e43cd3a/unsubscribe
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-
-###
-
-# Upload resource to topic (replace {{topicId}})
-# Requires an existing file at ./uploads/sample.pdf (relative to this .http)
-POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/resource
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
-Content-Type: multipart/form-data; boundary=Boundary
---Boundary
-Content-Disposition: form-data; name="resourceFile"; filename="sample.pdf"
+Content-Disposition: form-data; name="resourceFile"; filename="notes.pdf"
 Content-Type: application/pdf
 
 < ./uploads/Notes.pdf >
 
-###
-
-# Broadcast announcement on a topic
-POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/broadcast
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
-Content-Type: {{ct}}
+### Broadcast to Topic (store a tutor/admin comment)
+POST {{base}}/topics/{{topic_id}}/broadcast
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
 
 {
-  "message": "Reminder: Project milestone due Friday."
+  "message": "Please review the new lecture slides before next class."
 }
 
-### --------------------------------------------------------------------------
-### 6. FORUM (categories, threads, posts)
-### --------------------------------------------------------------------------
+################################################################################
+# 5) FORUM (categories, threads, posts)                                        #
+################################################################################
 
-# Create Forum Category
+### Create Forum Category
 POST {{base}}/forum/categories
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
-Content-Type: {{ct}}
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "name": "General",
-  "description": "General campus discussion"
+  "name": "General Q&A",
+  "description": "Ask anything about the course."
 }
 
-###
-
-# List Categories
-GET {{base}}/forum/categories
-
-###
-
-# Create Thread (use categoryId)
+### Create Forum Thread
 POST {{base}}/forum/threads
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-Content-Type: {{ct}}
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "categoryId": "68f89a2935392717ca2b5d55",
-  "title": "Help with recursion"
+  "categoryId": "{{forum_category_id}}",
+  "title": "Help with Assignment 3 (Management)"
 }
 
-###
+### List Threads in Category
+GET {{base}}/forum/threads?category={{forum_category_id}}
+Cookie: {{student_cookie}}
 
-# List Threads (optionally by category)
-GET {{base}}/forum/threads?category=68f89a2935392717ca2b5d55
-
-###
-
-# Create Post (use threadId)
+### Post Reply in Thread
 POST {{base}}/forum/posts
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-Content-Type: {{ct}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
 
 {
-  "threadId": "68f89a4035392717ca2b5d57",
-  "content": "Can someone explain base cases?"
+  "threadId": "{{forum_thread_id}}",
+  "content": "Remember to separate concerns into layers (UI, service, repo)."
 }
 
-###
+### List Posts for Thread
+GET {{base}}/forum/posts?thread={{forum_thread_id}}
+Cookie: {{student_cookie}}
 
-# List Posts in thread
-GET {{base}}/forum/posts?thread=68f89a4035392717ca2b5d57
+################################################################################
+# 6) QUESTIONS + RESPONSES                                                     #
+################################################################################
 
-### --------------------------------------------------------------------------
-### 7. PRIVATE MESSAGES (DM via /api/pm)
-### --------------------------------------------------------------------------
-
-# Send DM (student → tutor)
-POST {{base}}/pm
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyNjg4MywiZXhwIjoxNzYxMTMwNDgzfQ.w3Pj8ia7oUPam6t5MK3xqZCBxBytRaFteyBVDvyGZso
-Content-Type: {{ct}}
-
-{
-  "toUserId": "68f8969d35392717ca2b5d16",
-  "subject": "Software Problems",
-  "body": "I am having problems understanding software design patterns. Can you help me please?"
-}
-
-###
-
-# Get my DMs (student)
-GET {{base}}/pm
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjU1ODQsImV4cCI6MTc2MTEyOTE4NH0.anw_qRwOiJX-7oa79Dlhof9oqJYvOp_C7wE7Z2Da7X0
-
-###
-
-# Mark a DM as read (message id)
-PATCH {{base}}/pm/68f8987035392717ca2b5d3a/read
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-
-### --------------------------------------------------------------------------
-### 8. QUESTIONS & RESPONSES
-### --------------------------------------------------------------------------
-
-# Ask a question (student)
+### Ask Question (student)
 POST {{base}}/questions
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjk5OSwiZXhwIjoxNzYxMTI2NTk5fQ.99ewMa_dQ3BJEjodibE2TIZ9QR04Ece07UsUKB8vv14
-Content-Type: application/json
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "title": "Clarification on recursion",
-  "body": "Can a recursive call occur after a loop?",
-  "moduleCode": "SEN381"
+  "title": "Clarification on manager best practices",
+  "body": "What are some best practices for managers when leading a software team?",
+  "moduleCode": "BIM381"
 }
 
-###
-
-# Tutor responds (use questionId)
-POST {{base}}/questions/68f89acd35392717ca2b5d61/response
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
-Content-Type: {{ct}}
+### Tutor answers question
+POST {{base}}/questions/{{question_id}}/response
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
 
 {
-  "content": "Yes, but ensure your base case will be reached.",
+  "content": "Kindness, clear communication, and setting realistic goals are key.",
   "isAnonymous": false
 }
 
-###
+### Fetch responses
+GET {{base}}/questions/{{question_id}}/responses
+Cookie: {{student_cookie}}
 
-# Get responses for a question
-GET {{base}}/questions/68f89acd35392717ca2b5d61/responses
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjk5OSwiZXhwIjoxNzYxMTI2NTk5fQ.99ewMa_dQ3BJEjodibE2TIZ9QR04Ece07UsUKB8vv14
-
-###
-
-# List all questions
+### List all questions
 GET {{base}}/questions
+Cookie: {{student_cookie}}
 
-### --------------------------------------------------------------------------
-### 9. AI (Simulated)
-### --------------------------------------------------------------------------
+################################################################################
+# 7) PRIVATE MESSAGES (PM) + NOTIFICATIONS                                     #
+################################################################################
 
-POST {{base}}/ai/chat
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
-Content-Type: application/json
+### Send PM (student -> tutor) using toUserId
+POST {{base}}/pm
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "prompt": "Explain JWT briefly"
+  "toUserId": "{{tutor_id}}",
+  "subject": "Quick check",
+  "body": "Hi, could you review my submission feedback?"
 }
 
-### --------------------------------------------------------------------------
-### 10. NOTIFICATIONS
-### --------------------------------------------------------------------------
+### Get PM inbox (as tutor)
+GET {{base}}/pm
+Cookie: {{tutor_cookie}}
 
-# List my notifications
+### Mark PM as read (as tutor)
+PATCH {{base}}/pm/{{pm_message_id}}/read
+Cookie: {{tutor_cookie}}
+
+### Get Notifications (as tutor – should include the PM notify)
 GET {{base}}/notifications
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjY5NDQsImV4cCI6MTc2MTEzMDU0NH0.JQqxWBTlB_IvpSG69hyvVmt_SI7orQHjB7-JpfQHtW8
+Cookie: {{tutor_cookie}}
 
-###
+### Mark notification as read
+PATCH {{base}}/notifications/{{notification_id}}/read
+Cookie: {{tutor_cookie}}
 
-# Mark read (use notifId)
-PATCH {{base}}/notifications/68f8a9fa2e384b3d56807804/read
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjY5NDQsImV4cCI6MTc2MTEzMDU0NH0.JQqxWBTlB_IvpSG69hyvVmt_SI7orQHjB7-JpfQHtW8
+################################################################################
+# 8) RESOURCES APIs (query + mine)                                             #
+################################################################################
 
-###
+### List resources for topic (simple pass-through list – if implemented)
+GET {{base}}/resources?topic={{topic_id}}
+Cookie: {{student_cookie}}
 
-# Delete notification
-DELETE {{base}}/notifications/{{notifId}}
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+### List my uploaded resources (if implemented)
+GET {{base}}/resources/mine
+Cookie: {{tutor_cookie}}
 
-### --------------------------------------------------------------------------
-### 11. ADMIN
-### --------------------------------------------------------------------------
+################################################################################
+# 9) SUBMISSIONS                                                               #
+################################################################################
 
-# List users (admin panel)
-GET {{base}}/admin/users
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
-
-###
-
-# Update user role (admin) – set to tutor/student/admin
-PATCH {{base}}/admin/users/{{userId}}/role
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
-Content-Type: {{ct}}
+### Submit Assignment (student)
+POST {{base}}/submissions
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "role": "tutor"
+  "courseCode": "BIM381",
+  "title": "Assignment 3 – Business Management Best Practices",
+  "fileUrl": "/uploads/topic-resources/sample.pdf"
 }
 
-###
+### Get my Submissions (student)
+GET {{base}}/submissions/mine
+Cookie: {{student_cookie}}
 
-# Delete user (admin)
-DELETE {{base}}/admin/users/{{userId}}
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
+### List all Submissions (tutor/admin)
+# If your route supports filtering, the backend expects 'courseCode' (not 'course')
+GET {{base}}/submissions?q=&courseCode=BIM381&page=1&limit=25
+Cookie: {{tutor_cookie}}
+
+### Grade / Update a submission (tutor/admin)
+PATCH {{base}}/submissions/{{submission_id}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "grade": 78,
+  "feedback": "Good structure and clear separation of concerns."
+}
+
+################################################################################
+# 10) CALENDAR                                                                 #
+################################################################################
+
+### Create Calendar Event (tutor)
+POST {{base}}/calendar
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Consultation with students",
+  "startsAt": "2025-10-23T14:00:00.000Z",
+  "endsAt":   "2025-10-23T14:30:00.000Z",
+  "location": "Room 204",
+  "details": "Bring questions about Assignment 3."
+}
+
+### Query Calendar Range
+GET {{base}}/calendar?from=2025-10-22T00:00:00.000Z&to=2025-10-24T23:59:59.000Z
+Cookie: {{tutor_cookie}}
+
+### Update Calendar Event
+# (after creating, set {{calendar_event_id}} from the create response)
+PATCH {{base}}/calendar/{{calendar_event_id}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Consultation (rescheduled)",
+  "location": "Lab 3"
+}
+
+### Delete Calendar Event
+DELETE {{base}}/calendar/{{calendar_event_id}}
+Cookie: {{tutor_cookie}}
+
+
+################################################################################
+# 11) AI (Simulated)                                                           #
+################################################################################
+
+### Ask AI (student)
+POST {{base}}/ai/chat
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "prompt": "Explain the difference between recursion and iteration"
+}
+
+### Ask AI (tutor)
+POST {{base}}/ai/chat
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "prompt": "What is MongoDB?"
+}
