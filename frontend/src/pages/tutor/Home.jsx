@@ -102,7 +102,7 @@ export default function TutorHome() {
           <QuickAction onClick={() => nav("/app/tutor/dashboard")} label="Open Dashboard" />
           <QuickAction onClick={() => nav("/app/messages")} label="Messages" />
           <QuickAction onClick={() => nav("/app/forum")} label="Forum" />
-          <QuickAction onClick={() => nav("/app/tutor/library")} label="Materials Library" />
+        
           <QuickAction onClick={() => nav("/app/settings")} label="Settings" />
         </div>
       </section>
