@@ -1,18 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import BackHomeButton from "../../components/BackHomeButton.jsx";
 import { useParams } from "react-router-dom";
-import { getThread, addPost } from "../../api/forum";
+import { getThread, addPost /*, markThreadRead */ } from "../../api/forum";
+
+function CategoryPill({ name }) {
+  if (!name) return null;
+  return (
+    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
+      {name}
+    </span>
+  );
+}
+
+function AuthorLine({ user }) {
+  const label = user?.name || user?.email || "Member";
+  return <span className="text-xs text-gray-600">{label}</span>;
+}
 
 export default function ThreadView() {
   const { id } = useParams();
   const [thread, setThread] = useState(null);
   const [posts, setPosts] = useState([]);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
 
   async function refresh() {
-    const res = await getThread(id);
-    setThread(res.thread || null);
-    setPosts(res.posts || []);
+    try {
+      const res = await getThread(id);
+      setThread(res.thread || null);
+      setPosts(res.posts || []);
+      setErr(null);
+      // Optionally mark all as read:
+      // await markThreadRead(id);
+    } catch (e) {
+      console.error("Thread load failed", e);
+      setErr("Could not load this thread.");
+    }
   }
   useEffect(() => { refresh(); }, [id]);
 
@@ -27,43 +50,85 @@ export default function ThreadView() {
     } finally { setBusy(false); }
   }
 
-  if (!thread) return <div className="text-sm text-primary/60">Loading…</div>;
+  const originalPost = useMemo(() => posts[0] || null, [posts]);
+  const replies = useMemo(() => (posts.length > 1 ? posts.slice(1) : []), [posts]);
+
+  if (err) return <div className="text-sm text-red-600">{err}</div>;
+  if (!thread) return <div className="text-sm text-gray-600">Loading…</div>;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{thread.title}</h1>
-          <div className="text-xs text-primary/60">
-            {thread.courseCode ? `Course: ${thread.courseCode} • ` : ""}{new Date(thread.createdAt).toLocaleString()}
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
+      <header className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-extrabold leading-tight">{thread.title}</h1>
+            <div className="flex items-center gap-2">
+              <CategoryPill name={thread.category?.name} />
+              <span className="text-xs text-gray-600">{new Date(thread.createdAt).toLocaleString()}</span>
+            </div>
           </div>
+          <BackHomeButton />
         </div>
-        <BackHomeButton />
       </header>
 
-      <article className="border rounded p-3 bg-white">
-        <div className="text-sm whitespace-pre-wrap">{thread.body}</div>
+      {/* Original post */}
+      <article className="rounded-2xl border bg-white p-4 shadow-sm">
+        <h3 className="font-semibold mb-2">Original post</h3>
+        {originalPost ? (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <AuthorLine user={originalPost.author} />
+              <span className="text-xs text-gray-600">{new Date(originalPost.createdAt).toLocaleString()}</span>
+            </div>
+            <div className="text-sm whitespace-pre-wrap">{originalPost.content || originalPost.body}</div>
+          </>
+        ) : (
+          <div className="text-sm text-gray-600">No content.</div>
+        )}
       </article>
 
-      <section className="border rounded p-3 bg-white">
-        <h3 className="font-semibold mb-2">Replies</h3>
-        {posts.length === 0 ? (
-          <div className="text-sm text-primary/60">No replies yet.</div>
+      {/* Replies */}
+      <section className="rounded-2xl border bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold">Replies</h3>
+          <span className="text-xs text-gray-500">{replies.length} total</span>
+        </div>
+
+        {replies.length === 0 ? (
+          <div className="text-sm text-gray-600">No replies yet.</div>
         ) : (
           <ul className="space-y-3">
-            {posts.map(p => (
-              <li key={p._id} className="border rounded p-2">
-                <div className="text-xs text-primary/60">{new Date(p.createdAt).toLocaleString()}</div>
-                <div className="text-sm whitespace-pre-wrap">{p.body}</div>
+            {replies.map(p => (
+              <li key={p._id} className="rounded-xl border p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <AuthorLine user={p.author} />
+                  <span className="text-xs text-gray-600">{new Date(p.createdAt).toLocaleString()}</span>
+                </div>
+                <div className="text-sm whitespace-pre-wrap">{p.content || p.body}</div>
               </li>
             ))}
           </ul>
         )}
-        <form onSubmit={onReply} className="mt-3 space-y-2">
-          <textarea name="body" rows="4" className="w-full border rounded px-2 py-1" placeholder="Write a reply…" required />
-          <button className="px-3 py-1 rounded bg-accent text-primary-900" disabled={busy}>
-            {busy ? "Posting…" : "Reply"}
-          </button>
+
+        {/* Composer */}
+        <form onSubmit={onReply} className="mt-4 space-y-2">
+          <label className="block text-sm font-medium">Write a reply</label>
+          <textarea
+            name="body"
+            rows="4"
+            className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black/20"
+            placeholder="Share your thoughts or help with an answer…"
+            required
+          />
+          <div className="flex justify-end">
+            <button
+              className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-black transition disabled:opacity-60"
+              disabled={busy}
+            >
+              {busy ? "Posting…" : "Reply"}
+            </button>
+          </div>
         </form>
       </section>
     </div>

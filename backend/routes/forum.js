@@ -1,7 +1,7 @@
-// backend/routes/forum.routes.js
+// backend/routes/forum.js
 import express from "express";
-import { ForumCategory, ForumThread, ForumPost } from "../model/Forum.js";
 import jwt from "jsonwebtoken";
+import { ForumCategory, ForumThread, ForumPost } from "../model/Forum.js";
 
 const router = express.Router();
 
@@ -19,11 +19,20 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Default categories (idempotent seeding)
+const DEFAULT_FORUM_CATEGORIES = [
+  { name: "Need a Helping Hand", description: "Ask for help, share resources, get unstuck." },
+  { name: "Classes",             description: "Class discussions, notes, labs, and tips." },
+  { name: "Internship",          description: "Opportunities, CV advice, interviews." },
+  { name: "Exam",                description: "Past papers, prep threads, strategies." },
+  { name: "General",             description: "Anything that doesn’t fit elsewhere." },
+];
+
 //
 // ─── FORUM CATEGORIES ───────────────────────────────────────────────────────────
 //
 
-// Create category
+// POST /categories — create category
 router.post("/categories", requireAuth, async (req, res) => {
   try {
     const category = await ForumCategory.create({
@@ -36,51 +45,120 @@ router.post("/categories", requireAuth, async (req, res) => {
   }
 });
 
-// List categories
+// GET /categories — list all
 router.get("/categories", async (_req, res) => {
-  const cats = await ForumCategory.find().sort("name");
-  res.json({ ok: true, categories: cats });
+  try {
+    const cats = await ForumCategory.find().sort("name");
+    res.json({ ok: true, categories: cats });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /categories/seed-defaults — create missing defaults (idempotent)
+router.post("/categories/seed-defaults", requireAuth, async (_req, res) => {
+  try {
+    let created = 0;
+    for (const c of DEFAULT_FORUM_CATEGORIES) {
+      const r = await ForumCategory.updateOne(
+        { name: c.name },
+        { $setOnInsert: { name: c.name, description: c.description || "" } },
+        { upsert: true }
+      );
+      if (r.upsertedId) created++;
+    }
+    const cats = await ForumCategory.find().sort("name");
+    res.json({ ok: true, created, categories: cats });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 //
 // ─── THREADS ────────────────────────────────────────────────────────────────────
 //
 
-// Create thread
+// POST /threads — create thread (and optional opening post via `body`)
 router.post("/threads", requireAuth, async (req, res) => {
   try {
+    const { categoryId, title, body } = req.body;
+    if (!title) return res.status(400).json({ ok: false, message: "Missing title" });
+
     const thread = await ForumThread.create({
-      category: req.body.categoryId,
+      category: categoryId || undefined,
       author: req.userId,
       authorRole: req.userRole,
-      title: req.body.title,
+      title,
     });
+
+    if (body && body.trim().length) {
+      await ForumPost.create({
+        thread: thread._id,
+        author: req.userId,
+        authorRole: req.userRole,
+        content: body,
+      });
+    }
+
     res.status(201).json({ ok: true, thread });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// List threads
+// GET /threads — list threads (optional ?category=)
 router.get("/threads", async (req, res) => {
-  const filter = {};
-  if (req.query.category) filter.category = req.query.category;
-  const threads = await ForumThread.find(filter).populate("category author").sort("-createdAt");
-  res.json({ ok: true, threads });
+  try {
+    const filter = {};
+    if (req.query.category) filter.category = req.query.category;
+    const threads = await ForumThread.find(filter)
+      .populate("category author")
+      .sort("-createdAt");
+    res.json({ ok: true, threads });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /threads/:id — single thread
+router.get("/threads/:id", async (req, res) => {
+  try {
+    const t = await ForumThread.findById(req.params.id).populate("category author");
+    if (!t) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, thread: t });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /threads/:id/posts — posts within a thread
+router.get("/threads/:id/posts", async (req, res) => {
+  try {
+    const posts = await ForumPost.find({ thread: req.params.id })
+      .populate("author")
+      .sort("createdAt");
+    res.json({ ok: true, posts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 //
 // ─── POSTS ──────────────────────────────────────────────────────────────────────
 //
 
-// Create post
+// POST /posts — create post/reply
 router.post("/posts", requireAuth, async (req, res) => {
   try {
+    const { threadId, content } = req.body;
+    if (!threadId || !content) {
+      return res.status(400).json({ ok: false, message: "threadId and content are required" });
+    }
     const post = await ForumPost.create({
-      thread: req.body.threadId,
+      thread: threadId,
       author: req.userId,
       authorRole: req.userRole,
-      content: req.body.content,
+      content,
     });
     res.status(201).json({ ok: true, post });
   } catch (err) {
@@ -88,14 +166,50 @@ router.post("/posts", requireAuth, async (req, res) => {
   }
 });
 
-// List posts for thread
+// GET /posts?thread=:id — list posts for a thread (back-compat)
 router.get("/posts", async (req, res) => {
-  if (!req.query.thread)
-    return res.status(400).json({ ok: false, message: "Missing ?thread=id" });
-  const posts = await ForumPost.find({ thread: req.query.thread })
-    .populate("author")
-    .sort("createdAt");
-  res.json({ ok: true, posts });
+  try {
+    if (!req.query.thread)
+      return res.status(400).json({ ok: false, message: "Missing ?thread=id" });
+    const posts = await ForumPost.find({ thread: req.query.thread })
+      .populate("author")
+      .sort("createdAt");
+    res.json({ ok: true, posts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+//
+// ─── READ TRACKING (OPTIONAL UX) ────────────────────────────────────────────────
+//
+
+// POST /posts/:id/read — mark a single post read
+router.post("/posts/:id/read", requireAuth, async (req, res) => {
+  try {
+    const now = new Date();
+    await ForumPost.updateOne(
+      { _id: req.params.id, "readBy.user": { $ne: req.userId } },
+      { $addToSet: { readBy: { user: req.userId, readAt: now } } }
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /threads/:id/read-all — mark all posts in thread read
+router.post("/threads/:id/read-all", requireAuth, async (req, res) => {
+  try {
+    const now = new Date();
+    await ForumPost.updateMany(
+      { thread: req.params.id, "readBy.user": { $ne: req.userId } },
+      { $addToSet: { readBy: { user: req.userId, readAt: now } } }
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 export default router;
