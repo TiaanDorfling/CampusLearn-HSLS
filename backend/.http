@@ -289,20 +289,20 @@ GET {{base}}/forum/posts?thread=68f89a4035392717ca2b5d57
 
 # Send DM (student → tutor)
 POST {{base}}/pm
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyNDQ0NiwiZXhwIjoxNzYxMTI4MDQ2fQ.Iu78OtMl06f-7D3GDFacGer5lqoUOdeThashjATFmX8
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyNjg4MywiZXhwIjoxNzYxMTMwNDgzfQ.w3Pj8ia7oUPam6t5MK3xqZCBxBytRaFteyBVDvyGZso
 Content-Type: {{ct}}
 
 {
-  "toUserId": "68f893ffac1579b5cadb53e2",
+  "toUserId": "68f8969d35392717ca2b5d16",
   "subject": "Software Problems",
-  "body": "I am having problems understanding software design patterns. Can you help?"
+  "body": "I am having problems understanding software design patterns. Can you help me please?"
 }
 
 ###
 
 # Get my DMs (student)
 GET {{base}}/pm
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjU1ODQsImV4cCI6MTc2MTEyOTE4NH0.anw_qRwOiJX-7oa79Dlhof9oqJYvOp_C7wE7Z2Da7X0
 
 ###
 
@@ -366,13 +366,13 @@ Content-Type: application/json
 
 # List my notifications
 GET {{base}}/notifications
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjM5OTYsImV4cCI6MTc2MTEyNzU5Nn0.CK33NM-wu6LDBzdFHp1_rMJ8ipVupJrlKYg9V7Keu0o
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjY5NDQsImV4cCI6MTc2MTEzMDU0NH0.JQqxWBTlB_IvpSG69hyvVmt_SI7orQHjB7-JpfQHtW8
 
 ###
 
 # Mark read (use notifId)
-PATCH {{base}}/notifications/{{notifId}}/read
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+PATCH {{base}}/notifications/68f8a9fa2e384b3d56807804/read
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjY5NDQsImV4cCI6MTc2MTEzMDU0NH0.JQqxWBTlB_IvpSG69hyvVmt_SI7orQHjB7-JpfQHtW8
 
 ###
 

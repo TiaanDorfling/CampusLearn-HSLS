@@ -1,11 +1,12 @@
 // controller/AdminController.js
 import User from "../model/UserModel.js";
-import { ForumPost, ForumThread } from "../model/Forum.js";
+import { ForumThread } from "../model/Forum.js";
+import Topic from "../model/Topic.js";
 
 /** Fetch all users (admin panel) */
-export async function getAllUsers(_req, res) {
+export async function getAllUsers(req, res) {
   try {
-    const users = await User.find({}, "-passwordHash").sort({ createdAt: -1 }).lean();
+    const users = await User.find({}, "-passwordHash").lean();
     return res.json({ ok: true, count: users.length, users });
   } catch (err) {
     console.error("getAllUsers error:", err);
@@ -18,10 +19,7 @@ export async function updateUserRole(req, res) {
   try {
     const { id } = req.params;
     const { role } = req.body;
-    if (!['admin', 'tutor', 'student'].includes(role)) {
-      return res.status(400).json({ ok: false, error: "Invalid role" });
-    }
-    const updated = await User.findByIdAndUpdate(id, { role }, { new: true, projection: "-passwordHash" });
+    const updated = await User.findByIdAndUpdate(id, { role }, { new: true }).lean();
     if (!updated) return res.status(404).json({ ok: false, error: "User not found" });
     return res.json({ ok: true, message: "Role updated", user: updated });
   } catch (err) {
@@ -34,7 +32,7 @@ export async function updateUserRole(req, res) {
 export async function deleteUser(req, res) {
   try {
     const { id } = req.params;
-    const deleted = await User.findByIdAndDelete(id);
+    const deleted = await User.findByIdAndDelete(id).lean();
     if (!deleted) return res.status(404).json({ ok: false, error: "User not found" });
     return res.json({ ok: true, message: "User deleted" });
   } catch (err) {
@@ -43,14 +41,10 @@ export async function deleteUser(req, res) {
   }
 }
 
-/** Get all forum posts (admin view) */
+/** Get all forum threads (admin moderation view) */
 export async function getAllForumPosts(_req, res) {
   try {
-    const posts = await ForumPost.find()
-      .populate("author", "name email role")
-      .populate({ path: "thread", select: "title createdAt" })
-      .sort({ createdAt: -1 })
-      .lean();
+    const posts = await ForumThread.find().sort({ createdAt: -1 }).lean();
     return res.json({ ok: true, count: posts.length, posts });
   } catch (err) {
     console.error("getAllForumPosts error:", err);
@@ -58,11 +52,11 @@ export async function getAllForumPosts(_req, res) {
   }
 }
 
-/** Delete a forum post */
+/** Delete a forum thread */
 export async function deleteForumPost(req, res) {
   try {
     const { id } = req.params;
-    const deleted = await ForumPost.findByIdAndDelete(id);
+    const deleted = await ForumThread.findByIdAndDelete(id).lean();
     if (!deleted) return res.status(404).json({ ok: false, error: "Post not found" });
     return res.json({ ok: true, message: "Post deleted" });
   } catch (err) {
@@ -71,7 +65,7 @@ export async function deleteForumPost(req, res) {
   }
 }
 
-/** System health (admin) */
+/** System health check */
 export async function getHealth(_req, res) {
   return res.json({
     ok: true,

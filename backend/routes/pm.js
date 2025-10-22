@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { Conversation, Message } from "../model/privateMessage.js";
 import { auth } from "../middleware/auth.js";
+import Notification from "../model/Notification.js";
 
 const router = express.Router();
 
@@ -81,7 +82,17 @@ router.post("/", auth(true), async (req, res) => {
       sender: { user: req.user._id, role: req.user.role },
       subject: subject || "",
       text: body,
-      isReadBy: [req.user._id],
+      isReadBy: [req.user._id], // sender has read by default
+    });
+
+    // Notify recipient
+    await Notification.create({
+      user: toUserId,
+      type: "message",
+      title: subject || "New private message",
+      text: body.slice(0, 140),
+      data: { conversationId: String(convo._id), messageId: String(created._id) },
+      read: false,
     });
 
     // refetch with populate so UI immediately sees "from"

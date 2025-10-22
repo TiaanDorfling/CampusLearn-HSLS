@@ -20,7 +20,7 @@ import "./model/TutorModel.js";
 import "./model/StudentModel.js";
 import "./model/AIChatBot.js";
 import "./model/Forum.js";
-import "./model/NotificationService.js";
+import "./model/Notification.js";
 import "./model/privateMessage.js";
 import "./model/QuestionModel.js";
 import "./model/Resource.js";
