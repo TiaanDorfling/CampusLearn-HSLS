@@ -18,15 +18,16 @@
 }
 
 .dark {
-  --color-primary: #231536;
-  --color-primary-800: #271231;
-  --color-primary-900: #0f0713;
-  --color-accent: #b95a7d;
-  --color-lavender: #8f77e9;
-  --color-cream: #2e2838;
-  --color-redbrown: #9b1d03;
-  --color-beige: #2b2732;
-  background-color: var(--color-cream);
+   --color-primary: #2B1B3B;       
+  --color-primary-800: #1F1330;   
+  --color-primary-900: #0F0718;   
+  --color-accent: #a91f58;        
+  --color-lavender: #6d5b9e;      
+  --color-cream: #1E1B2A;        
+  --color-redbrown: #A53B2C;     
+  --color-beige: #27232E;         
+  background-color: var(--color-beige);
+  color: #EDEDED;   
 }
 
 /* Global niceties */

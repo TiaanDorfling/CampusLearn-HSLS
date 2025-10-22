@@ -1,4 +1,4 @@
-// frontend/src/routes/index.jsx
+//frontend/src/routes/index.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -33,31 +33,39 @@ import MessagesCenter from "../pages/messages/MessagesCenter.jsx";
 import ForumHome from "../pages/forum/ForumHome.jsx";
 import ThreadView from "../pages/forum/ThreadView.jsx";
 
-import Profile from "../pages/Profile.jsx";           // **NEW**
-import Settings from "../pages/Settings.jsx";         // **NEW**
+import Profile from "../pages/Profile.jsx";
+import Settings from "../pages/Settings.jsx";
 
 import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
 
 /* ---------- Helpers ---------- */
-function getLocalUser() {
-  try { return JSON.parse(localStorage.getItem("cl_user") || "null"); } catch { return null; }
+// ✅ Use cl_auth consistently (same as AuthGuard)
+function getLocalAuth() {
+  try { 
+    return JSON.parse(localStorage.getItem("cl_auth") || "null"); 
+  } catch { 
+    return null; 
+  }
 }
 
+// ✅ FIXED: Simplified PublicOnly - no re-render triggers
 function PublicOnly({ children }) {
-  let authed = false;
-  try {
-    const u = getLocalUser();
-    const a = JSON.parse(localStorage.getItem("cl_auth") || "null");
-    authed = !!(u || a?.email || a?.user);
-  } catch {}
-  return authed ? <Navigate to="/app" replace /> : children;
+  const auth = getLocalAuth();
+  
+  // If user is authenticated, redirect to app
+  if (auth?.user) {
+    return <Navigate to="/app" replace />;
+  }
+  
+  return children;
 }
 
 /** Role-based landing under /app (send to HOME by role) */
 function PrivateIndex() {
-  const u = getLocalUser();
-  const role = String(u?.role || "").toLowerCase();
+  const auth = getLocalAuth();
+  const role = String(auth?.user?.role || "").toLowerCase();
+  
   if (role === "admin") return <Navigate to="admin" replace />;
   if (role === "tutor") return <Navigate to="tutor" replace />;
   return <Navigate to="student" replace />;
@@ -114,8 +122,8 @@ export default function AppRoutes() {
         <Route path="forum/:id" element={<ThreadView />} />
 
         {/* Profile & Settings (all roles) */}
-        <Route path="profile" element={<Profile />} />       {/* **ADDED** */}
-        <Route path="settings" element={<Settings />} />     {/* **ADDED** */}
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
 
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />
