@@ -1,4 +1,3 @@
-// frontend/src/pages/tutor/Home.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MessagesDrawer from "../../components/messages/MessagesDrawer";
@@ -19,19 +18,15 @@ export default function TutorHome() {
     (async () => {
       try {
         setError("");
-        // Try aggregated endpoint
         const r = await getTutorHome();
         if (!alive) return;
 
         const events = normalizeEvents(Array.isArray(r?.schedule) ? r.schedule : []);
         setSchedule(events);
         setUnread(Array.isArray(r?.unread?.items) ? r.unread.items : []);
-
-        // Accept nextSession or nextClass; otherwise compute from events
         const next = r?.nextSession || r?.nextClass || findNextFromSchedule(events);
         setNextSession(next || null);
 
-        // If no events, fall back to teaching schedule
         if (events.length === 0) {
           try {
             const [sched, msgs] = await Promise.all([
@@ -42,13 +37,14 @@ export default function TutorHome() {
             const evts = normalizeEvents(Array.isArray(sched?.events) ? sched.events : []);
             setSchedule(evts);
             setUnread(Array.isArray(msgs?.items) ? msgs.items : unread);
-            setNextSession(sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null);
+            setNextSession(
+              sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null
+            );
           } catch {
-            /* keep whatever we have */
+            /* keep existing state */
           }
         }
       } catch (e) {
-        // Full fallback if aggregated endpoint fails
         try {
           const [sched, msgs] = await Promise.all([getMyTeachingSchedule(), getUnreadPreview(3)]);
           if (!alive) return;
@@ -63,7 +59,9 @@ export default function TutorHome() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   return (
@@ -102,13 +100,30 @@ export default function TutorHome() {
           <QuickAction onClick={() => nav("/app/tutor/dashboard")} label="Open Dashboard" />
           <QuickAction onClick={() => nav("/app/messages")} label="Messages" />
           <QuickAction onClick={() => nav("/app/forum")} label="Forum" />
-        
           <QuickAction onClick={() => nav("/app/settings")} label="Settings" />
+        </div>
+
+        {/* 🌟 Tutoring Tips Section */}
+        <div className="mt-8 bg-white/60 border border-primary/10 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-primary mb-2">✨ Tutoring Tips for Success</h2>
+          <ul className="list-disc ml-5 text-primary/80 space-y-1">
+            <li>🕐 Start sessions on time and keep them focused.</li>
+            <li>🎯 Set clear learning goals for each class.</li>
+            <li>💬 Encourage questions — active students learn better.</li>
+            <li>🌱 Offer constructive feedback and track progress weekly.</li>
+            <li>🤝 Build rapport — students engage more with a supportive tutor.</li>
+            <li>📚 Share additional learning resources via the Materials Library.</li>
+          </ul>
+          <p className="mt-3 text-sm text-primary/60 italic">
+            “The best tutors don’t just teach — they inspire curiosity.” 🌟
+          </p>
         </div>
       </section>
 
       {error && (
-        <div className="rounded border border-red-400/60 p-3 text-sm text-red-700 bg-red-50">{error}</div>
+        <div className="rounded border border-red-400/60 p-3 text-sm text-red-700 bg-red-50">
+          {error}
+        </div>
       )}
 
       {/* MAIN GRID */}
@@ -146,12 +161,13 @@ export default function TutorHome() {
                 </button>
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {unread.map(m => (
-                  <li key={m._id} className="rounded-lg border p-3 hover:bg-cream/50 transition">
+                {unread.map((m) => (
+                  <li
+                    key={m._id}
+                    className="rounded-lg border p-3 hover:bg-cream/50 transition"
+                  >
                     <div className="font-medium">{m.senderName || "Student"}</div>
-                    <div className="text-primary/60">
-                      {m.subject || m.body?.slice(0, 60)}
-                    </div>
+                    <div className="text-primary/60">{m.subject || m.body?.slice(0, 60)}</div>
                   </li>
                 ))}
               </ul>
@@ -165,7 +181,10 @@ export default function TutorHome() {
             <Card>
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">This Week’s Teaching Schedule</h3>
-                <button className="text-sm underline" onClick={() => nav("/app/tutor/dashboard")}>
+                <button
+                  className="text-sm underline"
+                  onClick={() => nav("/app/tutor/dashboard")}
+                >
                   Open full schedule
                 </button>
               </div>
@@ -185,8 +204,11 @@ export default function TutorHome() {
 /* Helpers */
 function Stat({ label, value, onClick }) {
   return (
-    <button type="button" onClick={onClick}
-      className="rounded-xl border bg-white p-3 text-left shadow-sm hover:shadow transition">
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl border bg-white p-3 text-left shadow-sm hover:shadow transition"
+    >
       <div className="text-[11px] uppercase tracking-wide text-primary/60">{label}</div>
       <div className="text-base font-semibold text-primary">{value}</div>
     </button>
@@ -194,7 +216,10 @@ function Stat({ label, value, onClick }) {
 }
 function QuickAction({ label, onClick }) {
   return (
-    <button onClick={onClick} className="px-3 py-1.5 rounded-lg border bg-white shadow-sm hover:bg-cream transition">
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-lg border bg-white shadow-sm hover:bg-cream transition"
+    >
       {label}
     </button>
   );
@@ -203,10 +228,9 @@ function Card({ children }) {
   return <div className="rounded-2xl border bg-white p-5 shadow-sm">{children}</div>;
 }
 
-/** Accepts events in either {day,start,end,title/location} or {date, start, end} shapes. */
 function normalizeEvents(events = []) {
-  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  return events.map(e => {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  return events.map((e) => {
     if (e.day) return e;
     if (e.date) {
       const d = new Date(e.date);
@@ -219,21 +243,23 @@ function normalizeEvents(events = []) {
 }
 
 function countToday(events) {
-  const today = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
-  return (events || []).filter(e => (e.day || "").slice(0,3) === today.slice(0,3)).length;
+  const today = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date().getDay()];
+  return (events || []).filter((e) => (e.day || "").slice(0, 3) === today.slice(0, 3)).length;
 }
 
 function findNextFromSchedule(events) {
   const now = new Date();
-  const weekday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][now.getDay()].slice(0,3);
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][now.getDay()].slice(0, 3);
   const mins = now.getHours() * 60 + now.getMinutes();
-  const today = (events || []).filter(e => (e.day || "").slice(0,3).toLowerCase() === weekday.toLowerCase());
+  const today = (events || []).filter(
+    (e) => (e.day || "").slice(0, 3).toLowerCase() === weekday.toLowerCase()
+  );
   const future = today
-    .map(e => ({
+    .map((e) => ({
       ...e,
       m: parseInt(e.start?.split(":")[0] || 0) * 60 + parseInt(e.start?.split(":")[1] || 0),
     }))
-    .filter(e => e.m >= mins)
-    .sort((a,b)=>a.m-b.m);
+    .filter((e) => e.m >= mins)
+    .sort((a, b) => a.m - b.m);
   return future[0] || null;
 }
