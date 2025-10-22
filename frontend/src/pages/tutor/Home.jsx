@@ -23,6 +23,9 @@ export default function TutorHome() {
           <button className="px-3 py-1 rounded border" onClick={() => setDrawer(true)}>
             New messages
           </button>
+          <button className="px-3 py-1 rounded border" onClick={() => nav("/app/tutor/library")}>
+            Materials Library
+          </button>
         </div>
       </div>
 

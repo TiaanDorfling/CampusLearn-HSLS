@@ -51,7 +51,7 @@ export default function Profile() {
         studentNumber: form.studentNumber,
         // CORRECTLY NEST THE emergencyContact field
         emergencyContact: {
-          phone: form.emergencyContactPhone, // Assuming you changed the input name
+          phone: form.emergencyContact, // Assuming you changed the input name
           // Include 'name' here if you have an input for it: name: form.emergencyContactName,
         },
         // You may need to remove any other fields not meant for the PATCH request

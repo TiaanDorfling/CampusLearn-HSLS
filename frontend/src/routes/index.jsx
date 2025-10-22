@@ -14,6 +14,9 @@ import CourseInfo from "../pages/public/CourseInfo.jsx";
 import Auth from "../pages/public/Auth.jsx";
 import SignUp from "../auth/SignUp.jsx";
 
+import RegisterAdmin from "../pages/public/RegisterAdmin.jsx";
+import RegisterTutor from "../pages/public/RegisterTutor.jsx";
+
 import CalendarHome from "../pages/calendar/CalendarHome.jsx";
 
 // Role-specific HOME pages
@@ -21,7 +24,10 @@ import StudentHome from "../pages/student/Home.jsx";
 import TutorHome   from "../pages/tutor/Home.jsx";
 import AdminHome   from "../pages/admin/Home.jsx";
 
-// Dashboards (optional, accessible via button)
+// Tutor-specific pages
+import MaterialsLibrary from "../pages/tutor/MaterialsLibrary.jsx";
+
+// Dashboards
 import StudentDashboard from "../pages/student/StudentDashboard.jsx";
 import TutorDashboard   from "../pages/tutor/TutorDashboard.jsx";
 import AdminDashboard   from "../pages/admin/AdminDashboard.jsx";
@@ -40,7 +46,6 @@ import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
 
 /* ---------- Helpers ---------- */
-// ✅ Use cl_auth consistently (same as AuthGuard)
 function getLocalAuth() {
   try { 
     return JSON.parse(localStorage.getItem("cl_auth") || "null"); 
@@ -49,23 +54,15 @@ function getLocalAuth() {
   }
 }
 
-// ✅ FIXED: Simplified PublicOnly - no re-render triggers
 function PublicOnly({ children }) {
   const auth = getLocalAuth();
-  
-  // If user is authenticated, redirect to app
-  if (auth?.user) {
-    return <Navigate to="/app" replace />;
-  }
-  
+  if (auth?.user) return <Navigate to="/app" replace />;
   return children;
 }
 
-/** Role-based landing under /app (send to HOME by role) */
 function PrivateIndex() {
   const auth = getLocalAuth();
   const role = String(auth?.user?.role || "").toLowerCase();
-  
   if (role === "admin") return <Navigate to="admin" replace />;
   if (role === "tutor") return <Navigate to="tutor" replace />;
   return <Navigate to="student" replace />;
@@ -81,6 +78,8 @@ export default function AppRoutes() {
         <Route path="/courses/:id" element={<CourseInfo />} />
         <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
         <Route path="/auth/register" element={<PublicOnly><SignUp /></PublicOnly>} />
+        {/* IMPORTANT: remove public admin/tutor registration routes for security */}
+        {/* If you truly need public tutor signup for demo, re-add with server-side validation */}
       </Route>
 
       {/* ---------- Private Area (/app/*) ---------- */}
@@ -98,20 +97,26 @@ export default function AppRoutes() {
         {/* Calendar (optional) */}
         <Route path="calendar" element={<CalendarHome />} />
 
-        {/* Role-gated HOME + Dashboard */}
+        {/* Student area */}
         <Route element={<RoleGuard allow={["student"]} />}>
           <Route path="student" element={<StudentHome />} />
           <Route path="student/dashboard" element={<StudentDashboard />} />
         </Route>
 
-        <Route element={<RoleGuard allow={["tutor"]} />}>
+        {/* Tutor area */}
+        <Route element={<RoleGuard allow={["tutor","admin"]} />}>
           <Route path="tutor" element={<TutorHome />} />
           <Route path="tutor/dashboard" element={<TutorDashboard />} />
+          <Route path="tutor/library" element={<MaterialsLibrary />} />
         </Route>
 
+        {/* Admin area */}
         <Route element={<RoleGuard allow={["admin"]} />}>
           <Route path="admin" element={<AdminHome />} />
           <Route path="admin/dashboard" element={<AdminDashboard />} />
+          {/* Admin-only creation pages */}
+          <Route path="admin/register-admin" element={<RegisterAdmin />} />
+          <Route path="admin/register-tutor" element={<RegisterTutor />} />
         </Route>
 
         {/* Messages (all roles) */}
