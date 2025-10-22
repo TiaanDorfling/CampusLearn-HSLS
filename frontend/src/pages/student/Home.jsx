@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MessagesDrawer from "../../components/messages/MessagesDrawer";
 import { getUnreadPreview } from "../../api/home";
+import StudentAssistantCard from "../../components/assistant/StudentAssistantCard.jsx";
 
 // Images
 import it1 from "../../assets/it1.jpg";
@@ -140,9 +141,15 @@ export default function StudentHome(){
   const alertCount = unreadCount > 0 ? Math.min(unreadCount, 9) : 0;
 
   // Group modules
+<<<<<<< HEAD
   const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});  
   // Group events by date (for centered sections)
   const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});  
+=======
+  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{}); // eslint-disable-line
+  // Group events by date (for centered sections)
+  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{}); // eslint-disable-line
+>>>>>>> 001ef1b82ee8a243818ce6868e540680baf6761d
 
   return (
     <div className="min-h-screen bg-cream">
@@ -178,6 +185,7 @@ export default function StudentHome(){
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Quick Actions row — match Admin style */}
       <div className="bg-white border-b-2 border-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -188,6 +196,16 @@ export default function StudentHome(){
             <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
             <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
           </div>
+=======
+        <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
+          <QuickAction onClick={()=>nav("/app/student/dashboard")} label="Open Dashboard" />
+          <QuickAction onClick={()=>nav("/app/messages")} label="Messages" />
+          <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
+          <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
+          <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
+          {/* NEW: Assistant quick action */}
+          <QuickAction onClick={()=>nav("/app/assistant")} label="Assistant" />
+>>>>>>> 001ef1b82ee8a243818ce6868e540680baf6761d
         </div>
       </div>
 
@@ -225,6 +243,9 @@ export default function StudentHome(){
           </Card>
 
           <div className="space-y-8">
+            {/* NEW: Quick Ask Assistant card */}
+            <StudentAssistantCard />
+
             {nextClass && (
               <Card>
                 <div className="flex items-center justify-between">

@@ -33,7 +33,7 @@ import TutorDashboard   from "../pages/tutor/TutorDashboard.jsx";
 import AdminDashboard   from "../pages/admin/AdminDashboard.jsx";
 
 // Admin tools
-import CourseManager from "../pages/admin/CourseManager.jsx"; // ← NEW
+import CourseManager from "../pages/admin/CourseManager.jsx";
 
 // Messages Center
 import MessagesCenter from "../pages/messages/MessagesCenter.jsx";
@@ -48,21 +48,18 @@ import Settings from "../pages/Settings.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
 
+// Assistant (AI Chat)
+import Assistant from "../pages/assistant/Assistant.jsx";
+
 /* ---------- Helpers ---------- */
 function getLocalAuth() {
-  try { 
-    return JSON.parse(localStorage.getItem("cl_auth") || "null"); 
-  } catch { 
-    return null; 
-  }
+  try { return JSON.parse(localStorage.getItem("cl_auth") || "null"); } catch { return null; }
 }
-
 function PublicOnly({ children }) {
   const auth = getLocalAuth();
   if (auth?.user) return <Navigate to="/app" replace />;
   return children;
 }
-
 function PrivateIndex() {
   const auth = getLocalAuth();
   const role = String(auth?.user?.role || "").toLowerCase();
@@ -81,8 +78,6 @@ export default function AppRoutes() {
         <Route path="/courses/:id" element={<CourseInfo />} />
         <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
         <Route path="/auth/register" element={<PublicOnly><SignUp /></PublicOnly>} />
-        {/* IMPORTANT: remove public admin/tutor registration routes for security */}
-        {/* If you truly need public tutor signup for demo, re-add with server-side validation */}
       </Route>
 
       {/* ---------- Private Area (/app/*) ---------- */}
@@ -94,11 +89,13 @@ export default function AppRoutes() {
           </AuthGuard>
         }
       >
-        {/* Role-based index (goes to each role's HOME) */}
         <Route index element={<PrivateIndex />} />
 
-        {/* Calendar (optional) */}
+        {/* Calendar */}
         <Route path="calendar" element={<CalendarHome />} />
+
+        {/* Assistant (all roles) */}
+        <Route path="assistant" element={<Assistant />} />
 
         {/* Student area */}
         <Route element={<RoleGuard allow={["student"]} />}>
@@ -116,32 +113,30 @@ export default function AppRoutes() {
         {/* Admin area */}
         <Route element={<RoleGuard allow={["admin"]} />}>
           <Route path="admin" element={<AdminHome />} />
-          <Route path="admin/dashboard" element={<AdminDashboard />} />   {/* ← NEW */}
-          <Route path="admin/courses" element={<CourseManager />} />      {/* ← NEW */}
-          {/* Admin-only creation pages */}
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="admin/courses" element={<CourseManager />} />
           <Route path="admin/register-admin" element={<RegisterAdmin />} />
           <Route path="admin/register-tutor" element={<RegisterTutor />} />
         </Route>
 
-        {/* Messages (all roles) */}
+        {/* Messages */}
         <Route path="messages" element={<MessagesCenter />} />
 
-        {/* Forum (all roles) */}
+        {/* Forum */}
         <Route path="forum" element={<ForumHome />} />
         <Route path="forum/:id" element={<ThreadView />} />
 
-        {/* Profile & Settings (all roles) */}
+        {/* Profile & Settings */}
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
 
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />
 
-        {/* Friendly aliases inside /app */}
+        {/* Aliases */}
         <Route path="home" element={<PrivateIndex />} />
         <Route path="dashboard" element={<PrivateIndex />} />
 
-        {/* Any other /app path -> role landing */}
         <Route path="*" element={<PrivateIndex />} />
       </Route>
 
