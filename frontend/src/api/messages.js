@@ -14,11 +14,6 @@ function friendlyError(err, fallback) {
   return e;
 }
 
-/* ============
-   Private Messages (PM)
-   ============ */
-
-// GET /api/pm?onlyUnread=(true|false)&limit=&cursor=
 export async function listPM({ onlyUnread = false, limit, cursor } = {}) {
   try {
     const params = { onlyUnread };
@@ -35,7 +30,6 @@ export async function listPM({ onlyUnread = false, limit, cursor } = {}) {
   }
 }
 
-// POST /api/pm  { toUserId, subject, body }
 export async function sendPM({ toUserId, subject = "", body = "" }) {
   try {
     const { data } = await axios.post(`${API_BASE}/pm`, { toUserId, subject, body }, opts);
@@ -45,7 +39,6 @@ export async function sendPM({ toUserId, subject = "", body = "" }) {
   }
 }
 
-// POST /api/pm/:id/read
 export async function markPMRead(id) {
   try {
     const { data } = await axios.post(`${API_BASE}/pm/${encodeURIComponent(id)}/read`, null, opts);
@@ -55,7 +48,6 @@ export async function markPMRead(id) {
   }
 }
 
-// POST /api/pm/read-many  { ids: [...] }
 export async function markPMReadMany(ids = []) {
   try {
     const { data } = await axios.post(`${API_BASE}/pm/read-many`, { ids }, opts);
@@ -65,11 +57,7 @@ export async function markPMReadMany(ids = []) {
   }
 }
 
-/* ============
-   Announcements / Broadcasts
-   ============ */
 
-// GET /api/notifications?onlyUnread=(true|false)&limit=&cursor=
 export async function listBroadcasts({ onlyUnread = false, limit, cursor } = {}) {
   try {
     const params = { onlyUnread };
@@ -86,7 +74,6 @@ export async function listBroadcasts({ onlyUnread = false, limit, cursor } = {})
   }
 }
 
-// POST /api/notifications/broadcast  { title, body, courseCode }
 export async function sendBroadcast({ title, body, courseCode }) {
   try {
     const { data } = await axios.post(
@@ -100,7 +87,6 @@ export async function sendBroadcast({ title, body, courseCode }) {
   }
 }
 
-// POST /api/notifications/:id/read
 export async function markBroadcastRead(id) {
   try {
     const { data } = await axios.post(
@@ -114,10 +100,6 @@ export async function markBroadcastRead(id) {
   }
 }
 
-/* ============
-   Optional convenience: small unread preview for top-bars
-   (uses /pm only, never hits /messages/unread)
-   ============ */
 export async function listUnreadPreview(limit = 3) {
   const res = await listPM({ onlyUnread: true, limit });
   return res.items || [];

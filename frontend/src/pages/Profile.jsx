@@ -17,7 +17,7 @@ export default function Profile() {
         setError("");
         setLoading(true);
         const data = await getMyStudent();
-        setProfile(data.student || data); // depending on how backend returns
+        setProfile(data.student || data); 
         setForm({
           about: (data.student?.about) ?? "",
           phone: (data.student?.phone) ?? "",
@@ -49,12 +49,9 @@ export default function Profile() {
         phone: form.phone,
         year: form.year,
         studentNumber: form.studentNumber,
-        // CORRECTLY NEST THE emergencyContact field
         emergencyContact: {
-          phone: form.emergencyContact, // Assuming you changed the input name
-          // Include 'name' here if you have an input for it: name: form.emergencyContactName,
+          phone: form.emergencyContact, 
         },
-        // You may need to remove any other fields not meant for the PATCH request
       };
 
       await updateMyStudent(patchPayload);

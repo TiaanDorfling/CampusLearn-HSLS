@@ -11,11 +11,9 @@ export default function SignOut() {
     let alive = true;
     (async () => {
       try {
-        // Clear server session cookie
-        await logout(); // POST /api/auth/logout (must clear cookie on server)
+        await logout(); 
         setMsg("Signed out.");
       } catch (err) {
-        // Even if network fails, hard-clear local hints to avoid loops
         setMsg(err?.friendlyMessage || "Signed out (local).");
       } finally {
         try {
@@ -23,11 +21,9 @@ export default function SignOut() {
           localStorage.removeItem("cl_user");
         } catch {}
 
-        // Navigate to /auth; final hard reload guarantees clean state
         if (!alive) return;
         nav("/auth", { replace: true });
-        // Optional: Uncomment for belt-and-braces cache bust
-        // setTimeout(() => window.location.replace("/auth"), 50);
+
       }
     })();
     return () => { alive = false; };

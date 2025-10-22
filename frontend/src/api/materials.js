@@ -1,10 +1,8 @@
 import axios from "axios";
 
-// Prefer env var; fallback to same-origin /api so the Vite proxy still works
 const API_BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/+$/, "");
 const base = `${API_BASE}/materials`;
 
-// Always send cookies for session auth; short timeout for UX
 const opts = { withCredentials: true, timeout: 15000 };
 
 function friendlyError(err, fallback) {

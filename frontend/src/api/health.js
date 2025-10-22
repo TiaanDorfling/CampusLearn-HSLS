@@ -1,4 +1,3 @@
-// frontend/src/api/health.js
 import api from "./axios";
 
 export async function healthz() {

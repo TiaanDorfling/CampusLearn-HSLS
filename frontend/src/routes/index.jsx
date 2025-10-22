@@ -1,4 +1,3 @@
-// frontend/src/routes/index.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -78,7 +77,7 @@ export default function AppRoutes() {
         <Route path="/auth/register" element={<PublicOnly><SignUp /></PublicOnly>} />
       </Route>
 
-      {/*  Private Area (/app/*)  */}
+      {/*  Private Area */}
       <Route
         path="/app"
         element={
@@ -131,7 +130,7 @@ export default function AppRoutes() {
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />
 
-        {/* NEW: Tutor-only alias so /app/dashboard opens TutorDashboard for tutors */}
+        {/* Tutor-only */}
         <Route element={<RoleGuard allow={["tutor"]} />}>
           <Route path="dashboard" element={<TutorDashboard />} />
         </Route>

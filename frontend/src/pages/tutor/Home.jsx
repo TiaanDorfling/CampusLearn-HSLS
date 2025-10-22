@@ -68,7 +68,7 @@ export default function TutorHome() {
         </div>
       </div>
 
-      {/* QUICK ACTION BAR — same pattern as other Homes */}
+      {/* QUICK ACTION BAR  */}
       <div className="bg-white border-b-2 border-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-wrap gap-2">
@@ -140,7 +140,7 @@ export default function TutorHome() {
           </p>
         </section>
 
-        {/* ERROR BANNER — same palette */}
+        {/* ERROR BANNER  */}
         {error && (
           <div className="rounded-lg border-2 border-redbrown/60 p-3 text-sm text-redbrown bg-cream shadow-sm">
             {error}
@@ -151,7 +151,6 @@ export default function TutorHome() {
         <section className="grid lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="space-y-6 lg:col-span-1">
-            {/* Next teaching session */}
             {nextSession && (
               <Card>
                 <div className="flex items-center justify-between">
@@ -173,12 +172,10 @@ export default function TutorHome() {
             )}
           </div>
 
-          {/* (Keep rest of grid columns empty) */}
           <div className="lg:col-span-2" />
         </section>
       </div>
 
-      {/* Drawer hookup (already had state + import) */}
       <MessagesDrawer open={drawer} onClose={() => setDrawer(false)} />
     </div>
   );

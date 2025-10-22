@@ -4,7 +4,6 @@ import api from "./axios";
 /** POST /auth/login */
 export async function login({ email, password }) {
   const res = await api.post("/auth/login", { email, password });
-  // Optional: minimal local hint for guards while session cookie is set server-side
   try {
     localStorage.setItem("cl_auth", JSON.stringify({ email }));
   } catch {}

@@ -1,4 +1,3 @@
-// frontend/src/pages/student/StudentDashboard.jsx
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { getCourse } from "../../api/adminapi";
@@ -22,17 +21,14 @@ import {
 export default function StudentDashboard() {
   const [activeView, setActiveView] = useState("overview");
 
-  // data
   const [student, setStudent] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
 
-  // flags
   const [loading, setLoading] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // ---------- fetch student (with fallbacks) ----------
   useEffect(() => {
     const fetchStudent = async () => {
       setLoading(true);
@@ -104,7 +100,6 @@ export default function StudentDashboard() {
     fetchStudent();
   }, []);
 
-  // ---------- profile form ----------
   const [form, setForm] = useState({
     phone: "",
     year: "",
@@ -125,7 +120,6 @@ export default function StudentDashboard() {
     }
   }, [student]);
 
-  // ✅ save profile (single definition, uses shared api with fallbacks)
   const onSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -170,12 +164,10 @@ export default function StudentDashboard() {
     }
   };
 
-  // guards
   if (loading) return <div className="p-10 text-center">Loading student data...</div>;
   if (error) return <div className="p-10 text-redbrown text-center">{error}</div>;
   if (!student) return <div className="p-10 text-center">No student found.</div>;
 
-  // ---------- demo content for overview (styled like admin) ----------
   const upcomingTasks = [
     { id: 1, task: "Finish React assignment", deadline: "Today", priority: "high" },
     { id: 2, task: "Prep for DB midterm", deadline: "Tomorrow", priority: "medium" },
@@ -253,7 +245,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header (mirrors admin) */}
+      {/* Header  */}
       <div className="bg-primary border-b-4 border-primary-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -278,7 +270,7 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Tabs (same style as admin) */}
+      {/* Tabs  */}
       <div className="bg-white border-b-2 border-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-1 overflow-x-auto">

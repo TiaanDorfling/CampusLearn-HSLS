@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors (unchanged; your palette) */
   --color-primary: #4B2061;
   --color-primary-800: #351843;
   --color-primary-900: #22102A;
@@ -11,7 +10,6 @@
   --color-redbrown: #9D4B3C;
   --color-beige: #E9D9B5;
 
-  /* Fonts */
   --font-heading: "Lato", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-button: "Poppins", ui-sans-serif, system-ui, sans-serif;
@@ -30,27 +28,22 @@
 
 }
 
-/* Global niceties */
 html, body, #root { height: 100%; }
 :root { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-/*transition*/
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Optional: softer inner panel look */
 .shadow-inner { box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.05); }
 
-/* Style for password requirements */
 .invalid {
-  color: #b91c1c; /* red-700 */
+  color: #b91c1c; 
 }
 .valid {
-  color: #166534; /* green-800 */
+  color: #166534; 
   text-decoration: line-through;
 }
-/* Practical Enhancement: Add icons for clarity */
 .invalid::before {
   content: '✖ ';
   margin-right: 4px;

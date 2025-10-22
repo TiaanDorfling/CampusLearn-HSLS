@@ -1,4 +1,3 @@
-// frontend/src/pages/student/Home.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MessagesDrawer from "../../components/messages/MessagesDrawer";
@@ -7,13 +6,11 @@ import StudentAssistantCard from "../../components/assistant/StudentAssistantCar
 
 import { MessageSquare, Bell, AlertCircle, Calendar, BookOpen } from "lucide-react";
 
-// Images
 import it1 from "../../assets/it1.jpg";
 import it3 from "../../assets/it3.jpg";
 import it5 from "../../assets/it5.jpg";
 import it6 from "../../assets/it6.jpg";
 
-/** Qualifications showcase */
 const coursesShowcase = [
   { id: 1, title: "Bachelor of Computing (BComp)", image: it1, badges: ["4 years", "NQF 8", "≈480–506 credits", "Work-integrated learning"], blurb: "A practical, career-focused degree with strong industry input. Choose a specialisation in Data Science or Software Engineering." },
   { id: 2, title: "Bachelor of Information Technology (BIT)", image: it3, badges: ["3 years", "NQF 7", "360 credits"], blurb: "Comprehensive IT degree building a strong foundation in software development and systems." },
@@ -22,9 +19,7 @@ const coursesShowcase = [
   { id: 7, title: "Diploma for Deaf Students", image: it6, badges: ["Vocational", "Accessible learning"], blurb: "Special-support diploma programme empowering deaf students for IT careers." },
 ];
 
-/** Modules table data */
 const modules = [
-  // Core
   { cat: "Core", subject: "Research Methods 381", code: "RSH381", nqf: 7, credits: 7, prereq: ["STA281"] },
   { cat: "Core", subject: "Database Development 381", code: "DBD381", nqf: 7, credits: 7, prereq: ["DBD281"] },
   { cat: "Core", subject: "Innovation and Leadership 321", code: "INL321", nqf: 7, credits: 5, prereq: ["INL201", "INL202"] },
@@ -33,23 +28,19 @@ const modules = [
   { cat: "Core", subject: "Project 381", code: "PRJ381", nqf: 8, credits: 17, prereq: ["PMM281"] },
   { cat: "Core", subject: "Project Management 381", code: "PMM381", nqf: 7, credits: 7, prereq: [] },
 
-  // Fundamentals: Software Engineering Stream
   { cat: "Fundamentals: Software Engineering Stream", subject: "Programming 381", code: "PRG381", nqf: 7, credits: 9, prereq: ["PRG282"] },
   { cat: "Fundamentals: Software Engineering Stream", subject: "Software Engineering 381", code: "SEN381", nqf: 8, credits: 30, prereq: ["PMM381", "PRG282", "SAD281"] },
   { cat: "Fundamentals: Software Engineering Stream", subject: "Web Programming 381", code: "WPR381", nqf: 7, credits: 9, prereq: ["PRG282", "WPR281"] },
 
-  // Fundamentals: Data Science Stream
   { cat: "Fundamentals: Data Science Stream", subject: "Data Science 381", code: "BIN381", nqf: 8, credits: 30, prereq: ["DWH281", "MLG381"] },
   { cat: "Fundamentals: Data Science Stream", subject: "Database Administration 381", code: "DBA381", nqf: 7, credits: 9, prereq: ["DBD281"] },
   { cat: "Fundamentals: Data Science Stream", subject: "Statistics 381", code: "STA381", nqf: 7, credits: 9, prereq: ["STA281"] },
 
-  // Electives
   { cat: "Electives (choose one of)", subject: "Innovation Management 381", code: "INM381", nqf: 7, credits: 11, prereq: [] },
   { cat: "Electives (choose one of)", subject: "Machine Learning 382", code: "MLG382", nqf: 7, credits: 11, prereq: ["MLG381", "PRG282"] },
   { cat: "Electives (choose one of)", subject: "User Experience Design 381", code: "UAX381", nqf: 7, credits: 11, prereq: ["PRG282", "WPR281"] },
 ];
 
-/** Weekly pattern for dummy schedule (Mon=1 … Sun=0) */
 const weeklySessions = [
   { dow: 1, subject: "Software Engineering 381", code: "SEN381", start: "09:00", end: "10:30", room: "B201" },
   { dow: 1, subject: "Machine Learning 381",     code: "MLG381", start: "11:00", end: "12:00", room: "Lab 1" },
@@ -70,7 +61,6 @@ const weeklySessions = [
   { dow: 5, subject: "Project 381 — Milestone",  code: "PRJ381", start: "15:00", end: "17:00", room: "Project Lab" },
 ];
 
-/* ===== Dummy schedule utils ===== */
 function pad2(n){return String(n).padStart(2,"0");}
 function fmtDate(d){
   const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -83,7 +73,7 @@ function buildDummyScheduleForCurrentMonth(){
   const items=[];
   for(let day=1; day<=last; day++){
     const d=new Date(y,m,day);
-    const dow=d.getDay(); // 0=Sun..6=Sat
+    const dow=d.getDay(); 
     for(const s of weeklySessions){
       if(s.dow===dow){
         items.push({
@@ -112,18 +102,15 @@ function countTodayFromEvents(events){
     && e.date.getMonth()===today.getMonth()
     && e.date.getDate()===today.getDate()).length;
 }
-/* ======================================= */
 
 export default function StudentHome(){
   const nav = useNavigate();
   const [drawer,setDrawer]=useState(false);
   const [unread,setUnread]=useState([]);
 
-  // Build dummy schedule once (current month)
   const monthEvents = useMemo(buildDummyScheduleForCurrentMonth,[]);
   const nextClass = useMemo(()=>findNextFromEvents(monthEvents),[monthEvents]);
 
-  // Unread preview only (no schedule fetch)
   useEffect(()=>{
     let alive=true;
     (async()=>{
@@ -135,18 +122,16 @@ export default function StudentHome(){
     return ()=>{alive=false;};
   },[]);
 
-  // Derived quick stats
   const todayCount = countTodayFromEvents(monthEvents);
   const unreadCount = unread.length;
   const alertCount = unreadCount > 0 ? Math.min(unreadCount, 9) : 0;
 
-  // Group modules & events
   const grouped = modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});
   const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header — match Admin styling */}
+      {/* Header  */}
       <div className="bg-primary border-b-4 border-primary-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -182,7 +167,7 @@ export default function StudentHome(){
         </div>
       </div>
 
-      {/* Quick Actions row — match Admin style (includes Assistant) */}
+      {/* Quick Actions row — */}
       <div className="bg-white border-b-2 border-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-wrap gap-2">
@@ -198,14 +183,14 @@ export default function StudentHome(){
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Stats — same tile style as Admin */}
+        {/* Stats —  */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           <StatCard icon={Calendar} color="bg-primary" label="Today’s Classes" value={todayCount} change="+0" />
           <StatCard icon={MessageSquare} color="bg-accent" label="Unread Messages" value={unreadCount} change={unreadCount ? `+${unreadCount}` : "—"} />
           <StatCard icon={BookOpen} color="bg-lavender" label="Next Class" value={nextClass ? `${nextClass.code}` : "—"} change={nextClass ? "Soon" : "—"} />
         </div>
 
-        {/* Top row: Video + side cards */}
+        {/* Video  */}
         <div className="grid lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2">
             <div className="flex items-center justify-between">
@@ -232,7 +217,7 @@ export default function StudentHome(){
           </Card>
 
           <div className="space-y-8">
-            {/* Quick Ask Assistant card */}
+            {/* Quick Ask Assistant  */}
             <StudentAssistantCard />
 
             {nextClass && (
@@ -280,7 +265,7 @@ export default function StudentHome(){
           </div>
         </div>
 
-        {/* Monthly Schedule — Admin card style */}
+        {/* Monthly Schedule  */}
         <Card>
           <h3 className="text-xl font-heading font-bold text-primary text-center">October Class Schedule</h3>
           <div className="mt-4 rounded-2xl border-2 border-primary/10 p-4">
@@ -309,7 +294,7 @@ export default function StudentHome(){
           </div>
         </Card>
 
-        {/* Modules table — Admin table look */}
+        {/* Modules table */}
         <Card>
           <h3 className="text-xl font-heading font-bold text-primary mb-3">Software Engineering — Modules & Streams</h3>
           <div className="rounded-xl border-2 border-primary/10 overflow-hidden bg-white">
@@ -345,7 +330,7 @@ export default function StudentHome(){
           </div>
         </Card>
 
-        {/* Qualifications grid — Admin card look */}
+        {/* Qualifications grid */}
         <Card>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-heading font-bold text-primary">What is your next study option</h3>
@@ -383,7 +368,6 @@ export default function StudentHome(){
   );
 }
 
-/* Reusable UI (Admin look) */
 function StatCard({ icon:Icon, color, label, value, change }) {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10 hover:border-primary/30 transition">

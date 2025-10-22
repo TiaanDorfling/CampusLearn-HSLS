@@ -1,7 +1,5 @@
-// frontend/src/api/adminapi.js
 import api from "./axios";
 
-// Try multiple paths in order; succeed on the first that works
 async function trySeq(requestFns) {
   let lastErr;
   for (const fn of requestFns) {
@@ -9,7 +7,6 @@ async function trySeq(requestFns) {
       return await fn();
     } catch (err) {
       const s = err?.response?.status || err?.status;
-      // continue only on 404/405/Not Found/Method Not Allowed
       if (s === 404 || s === 405) { lastErr = err; continue; }
       lastErr = err; break;
     }
@@ -29,7 +26,6 @@ const qp = ({ page=1, pageSize=20, q }={}) => {
   return p;
 };
 
-/* -------------------- STUDENTS -------------------- */
 export async function listStudents({ page=1, pageSize=20, q, all=false } = {}) {
   const fetchPage = async (pg) => {
     const { data } = await trySeq([
@@ -42,7 +38,6 @@ export async function listStudents({ page=1, pageSize=20, q, all=false } = {}) {
 
   if (!all) return fetchPage(page);
 
-  // Aggregate all pages
   const acc = []; let pg = 1, total = 0;
   for (;;) {
     const { items, total: t } = await fetchPage(pg);
@@ -51,7 +46,7 @@ export async function listStudents({ page=1, pageSize=20, q, all=false } = {}) {
     acc.push(...items);
     if (total && acc.length >= total) break;
     pg += 1;
-    if (pg > 100) break; // safety cap
+    if (pg > 100) break; 
   }
   return { items: acc, page: 1, total: total || acc.length };
 }
@@ -64,7 +59,6 @@ export async function getStudent(id) {
   return data;
 }
 export async function createStudent(body) {
-  // Accept {name,email,year,phone}; map to common shape
   const payload = {
     name:  body.name,
     email: body.email,
@@ -73,7 +67,6 @@ export async function createStudent(body) {
   };
   const { data } = await trySeq([
     () => api.post("/admin/students", payload),
-    // fallback: older plural/singular versions
     () => api.post("/students", payload),
     () => api.post("/student",  payload),
   ]);
@@ -101,7 +94,6 @@ export async function deleteStudent(id) {
   return data;
 }
 
-/* -------------------- TUTORS -------------------- */
 export async function listTutors({ page=1, pageSize=20, q, all=false } = {}) {
   const fetchPage = async (pg) => {
     const { data } = await trySeq([
@@ -147,7 +139,6 @@ export async function deleteTutor(id){
   ]); return data;
 }
 
-/* -------------------- COURSES -------------------- */
 export async function listCourses({ page=1, pageSize=20, q, all=false } = {}) {
   const fetchPage = async (pg) => {
     const { data } = await trySeq([
@@ -193,28 +184,19 @@ export async function deleteCourse(id){
   ]); return data;
 }
 
-/* -------------------- ENROLLMENT (NEW) -------------------- */
-// Enroll a student in a course
 export async function enrollStudentInCourse(courseId, studentId) {
   const { data } = await trySeq([
-    // primary
     () => api.post(`/admin/courses/${courseId}/enroll`, { studentId }),
-    // fallback via student
     () => api.post(`/admin/students/${studentId}/enroll`, { courseId }),
-    // idempotent relation-URL fallback
     () => api.put(`/admin/courses/${courseId}/students/${studentId}`),
-    // very generic legacy
     () => api.post(`/courses/${courseId}/enroll`, { studentId }),
   ]);
   return data;
 }
 
-// Unenroll a student from a course
 export async function unenrollStudentFromCourse(courseId, studentId) {
   const { data } = await trySeq([
-    // primary
     () => api.delete(`/admin/courses/${courseId}/students/${studentId}`),
-    // alternative body-based endpoints
     () => api.post(`/admin/courses/${courseId}/unenroll`, { studentId }),
     () => api.post(`/admin/students/${studentId}/unenroll`, { courseId }),
   ]);
@@ -242,7 +224,6 @@ const adminapi = {
     create: createCourse,
     update: updateCourse,
     remove: deleteCourse,
-    // NEW enrollment helpers exposed on the default object too
     enroll:   enrollStudentInCourse,
     unenroll: unenrollStudentFromCourse,
   },
@@ -255,7 +236,6 @@ export async function listCoursesForStudent(studentId) {
     () => api.get(`/admin/courses`, { params: { student: studentId } }),
     () => api.get(`/courses`,       { params: { student: studentId } }),
   ]);
-  // If backend returns a bare array, wrap it like other list calls
   return Array.isArray(data) ? { items: data, page: 1, total: data.length } : data;
 }
 
