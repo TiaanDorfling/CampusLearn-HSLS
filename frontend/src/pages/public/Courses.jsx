@@ -1,26 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-// Images (per your request)
 import it1 from "../../assets/it1.jpg";
 import it3 from "../../assets/it3.jpg";
 import it5 from "../../assets/it5.jpg";
 import it6 from "../../assets/it6.jpg";
 
-/**
- * Qualifications sourced from Belgium Campus iTversity:
- * - BComp (NQF 8, 4 years; accredit doc shows 480 credits; flyers ~506)
- * - BIT (NQF 7, 3 years, 360 credits) + Part-Time BIT (5 years, Saturdays)
- * - Diploma in IT (NQF 6, 360 credits; 2.5 yrs academic + 6 months WIL)
- * - Diploma for Deaf Students (listed on qualifications page)
- *
- * Reference pages:
- *  - https://www.belgiumcampus.ac.za/qualifications/
- *  - https://www.belgiumcampus.ac.za/accreditation/
- *  - https://www.belgiumcampus.ac.za/bachelor-of-information-technology/
- *  - https://www.belgiumcampus.ac.za/part-time-bachelor-of-information-technology/
- *  - https://www.belgiumcampus.ac.za/diploma-in-information-technology/
- */
 
 const courses = [
   {
@@ -47,7 +32,7 @@ const courses = [
   {
     id: 22,
     title: "Bachelor of IT — Part-Time",
-    image: it3, // reuse
+    image: it3,
     badges: ["5 years", "NQF 7", "Saturdays"],
     blurb:
       "BIT for working professionals — Saturday lectures with the same outcomes as the full-time programme.",

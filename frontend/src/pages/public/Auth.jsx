@@ -6,15 +6,10 @@ function roleHome(roleRaw) {
   const role = String(roleRaw || "").toLowerCase();
   if (role === "admin") return "/app/admin";
   if (role === "tutor") return "/app/tutor";
-  return "/app/student"; // default -> student
+  return "/app/student";
 }
 
-/**
- * Choose the next route:
- * - If there's a meaningful "from" (like /app/forum/123), go there.
- * - Otherwise go to the role home. We treat generic paths like /app, /app/home,
- *   /app/dashboard, /app/calendar as NOT meaningful and send to role home.
- */
+
 function pickNext(from, role) {
   const bad = new Set(["/app", "/app/", "/app/home", "/app/dashboard", "/app/calendar", "/auth", "/"]);
   if (from && !bad.has(from)) return from;
@@ -30,7 +25,6 @@ export default function Auth() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  // If a session cookie is already valid, skip the form
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -40,14 +34,13 @@ export default function Auth() {
 
         if (s?.active && s?.user) {
           localStorage.setItem("cl_auth", JSON.stringify({ user: s.user, token: "cookie" }));
-          localStorage.setItem("cl_user", JSON.stringify(s.user)); // keep in sync with guards
+          localStorage.setItem("cl_user", JSON.stringify(s.user));
 
           const from = loc.state?.from?.pathname;
           const next = pickNext(from, s.user.role);
           nav(next, { replace: true });
         }
       } catch {
-        // no valid session yet — stay on login
       }
     })();
     return () => { alive = false; };
@@ -60,7 +53,7 @@ export default function Auth() {
     try {
       if (!email || !password) throw new Error("Please enter your email and password.");
 
-      const data = await login({ email, password }); // backend sets cookie
+      const data = await login({ email, password });
       localStorage.setItem("cl_auth", JSON.stringify({ user: data.user, token: "cookie" }));
       localStorage.setItem("cl_user", JSON.stringify(data.user));
 

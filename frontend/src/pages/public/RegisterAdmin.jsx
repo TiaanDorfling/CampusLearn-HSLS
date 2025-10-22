@@ -1,7 +1,6 @@
-// src/pages/public/RegisterAdmin.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { register } from "../../api/auth"; // expects backend to set role server-side or accept role
+import { register } from "../../api/auth";
 import { isValidEmail } from "../../utils/validators";
 
 export default function RegisterAdmin() {
@@ -13,7 +12,7 @@ export default function RegisterAdmin() {
     e.preventDefault(); setErr(""); setSaving(true);
     try {
       if (!isValidEmail(form.email)) throw new Error("Use a valid email.");
-      await register({ ...form, role: "admin" }); // backend should enforce who can create admins
+      await register({ ...form, role: "admin" });
       nav("/auth", { replace: true });
     } catch (e2) { setErr(e2.message || "Failed to register."); }
     finally { setSaving(false); }

@@ -1,17 +1,11 @@
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
-// Images used across courses
 import it1 from "../../assets/it1.jpg";
 import it3 from "../../assets/it3.jpg";
 import it5 from "../../assets/it5.jpg";
 import it6 from "../../assets/it6.jpg";
 
-/**
- * Course data aligned with your public grid.
- * If you later want to hydrate this from the server, you can replace this
- * object with an API call and keep the render logic unchanged.
- */
 const COURSE_MAP = {
   // 1) Bachelor of Computing
   1: {
@@ -103,7 +97,6 @@ export default function CourseInfo() {
   const { id } = useParams();
   const course = COURSE_MAP[id];
 
-  // Smooth scroll to anchor (#overview / #more) when arriving or changing id/hash
   useEffect(() => {
     if (window.location.hash) {
       const el = document.querySelector(window.location.hash);
