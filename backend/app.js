@@ -1,10 +1,4 @@
-// ============================================================================
-//  CampusLearn Backend – Express App Entry Point
-//  Description: Loads env, connects MongoDB, registers discriminators,
-//  configures middleware, serves static assets, and mounts all API routes.
-// ============================================================================
-
-import express from "express";
+import express, { Router } from "express";
 import path, { dirname } from "path";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -12,14 +6,14 @@ import cors from "cors";
 import fs from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
 
-// --- Loaders ---
+// Loaders 
 import { loadEnv } from "./config/loadEnv.js";
 import { connectDB } from "./config/db.js";
 
 // Load environment variables first
 loadEnv();
 
-// --- Register Mongoose models BEFORE routes ---
+// Register Mongoose models BEFORE routes 
 import "./model/UserModel.js";
 import "./model/AdminModel.js";
 import "./model/TutorModel.js";
@@ -33,26 +27,20 @@ import "./model/Resource.js";
 import "./model/Response.js";
 import "./model/Topic.js";
 
-// --- Connect to MongoDB ---
+// Connect to MongoDB
 await connectDB(process.env.MONGO_URI);
 
-// --- Express app ---
+// Express app 
 const app = express();
 app.set("trust proxy", true);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ============================================================================
-//  MIDDLEWARE
-// ============================================================================
+// MIDDLEWARE
+if (process.env.NODE_ENV !== "production") app.use(morgan("dev"));
 
-// Verbose request logger (dev)
-if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
-}
-
-// ---------------- CORS CONFIG ----------------
+// CORS CONFIG
 const allow =
   (process.env.CLIENT_ORIGIN || "http://localhost:5173")
     .split(",")
@@ -62,7 +50,7 @@ const allow =
 app.use(
   cors({
     origin(origin, cb) {
-      if (!origin) return cb(null, true); // allow tools like curl/Postman
+      if (!origin) return cb(null, true);
       if (allow.includes(origin)) return cb(null, true);
       console.warn(`CORS blocked origin: ${origin}`);
       return cb(new Error(`CORS: Origin not allowed: ${origin}`), false);
@@ -70,16 +58,12 @@ app.use(
     credentials: true,
   })
 );
-
-// Handle OPTIONS preflight requests safely
 app.options("*", cors({ origin: allow, credentials: true }));
 
-// Body & cookies
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 
-// Optional request tracing
 if (process.env.REQUEST_TRACE === "1") {
   app.use((req, _res, next) => {
     console.log("→", req.method, req.originalUrl);
@@ -95,39 +79,25 @@ try {
   console.warn("[warn] rateLimit middleware missing, continuing without it");
 }
 
-// ============================================================================
-//  STATIC FILES + HEALTH CHECK
-// ============================================================================
-
+// STATIC FILES + HEALTH CHECK
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
-// ✅ Keep /healthz above all routers and error handlers
-app.get("/healthz", (req, res) => {
+app.get("/healthz", (_req, res) => {
   try {
-    console.log("→ /healthz called");
     return res.status(200).json({
       ok: true,
       env: process.env.NODE_ENV || "dev",
       time: new Date().toISOString(),
+      uptime: process.uptime(),
     });
   } catch (err) {
     console.error("healthz error:", err);
-    return res
-      .status(500)
-      .json({ ok: false, error: err?.message || "healthz-failed" });
+    return res.status(500).json({ ok: false, error: err?.message || "healthz-failed" });
   }
 });
 
-// ============================================================================
-//  ROUTES
-// ============================================================================
-import { Router } from "express";
-
-/**
- * Dynamically loads a route file from /routes.
- * Supports .js, .routes.js, Route.js, Routes.js variations.
- */
+// ROUTES
 async function loadRoute(name) {
   const variations = [
     `./routes/${name}.routes.js`,
@@ -136,7 +106,6 @@ async function loadRoute(name) {
     `./routes/${name}Route.js`,
     `./routes/${name}.js`,
   ];
-
   for (const rel of variations) {
     const fullPath = path.join(__dirname, rel);
     if (fs.existsSync(fullPath)) {
@@ -145,45 +114,45 @@ async function loadRoute(name) {
       return routeModule.default || routeModule;
     }
   }
-
-  console.warn(
-    `[routes] ⚠️ No route file found for "${name}" (checked: ${variations.join(", ")})`
-  );
+  console.warn(`[routes] ⚠️ No route file found for "${name}" (checked: ${variations.join(", ")})`);
   return Router();
 }
 
-// === Map of all known route prefixes ===
+// Map of all known route prefixes 
 const routeMap = {
   index: "/",
   auth: "/api/auth",
   user: "/api/user",
+  users: "/api/users",          // ← added
   student: "/api/student",
   tutor: "/api/tutor",
   topics: "/api/topics",
   forum: "/api/forum",
   question: "/api/questions",
   messages: "/api/messages",
+  pm: "/api/pm",
   admin: "/api/admin",
   calendar: "/api/calendar",
   resources: "/api/resources",
   submissions: "/api/submissions",
   ai: "/api/ai",
+  notifications: "/api/notifications",
+  health: "/api/health",
 };
 
 // Dynamically load & register each route
 for (const [name, base] of Object.entries(routeMap)) {
-  const routes = await loadRoute(name);
-  if (routes) app.use(base, routes);
+  try {
+    const routes = await loadRoute(name);
+    if (routes) app.use(base, routes);
+  } catch (err) {
+    console.error(`[routes] ❌ Failed to load "${name}" route:`, err.message);
+  }
 }
 
-// ============================================================================
-//  ERROR HANDLING
-// ============================================================================
+// ERROR HANDLING
 import { notFound, errorHandler } from "./middleware/error.js";
 app.use(notFound);
 app.use(errorHandler);
 
-// ============================================================================
-//  EXPORT
-// ============================================================================
 export default app;

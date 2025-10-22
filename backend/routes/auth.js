@@ -8,6 +8,15 @@ import { generateToken, verifyToken } from '../utils/jwt.js';
 
 const router = express.Router();
 
+const allowedStudent = /^[a-z0-9._%+-]+@student\.belgiumcampus\.ac\.za$/i;
+const allowedStaff   = /@(?:[a-z0-9-]+\.)?(belgiumcampus\.ac\.za|campuslearn\.ac\.za)$/i;
+
+function emailAllowedForRole(email, role) {
+  if (role === 'student') return allowedStudent.test(email);
+  if (role === 'tutor' || role === 'admin') return allowedStaff.test(email);
+  return false;
+}
+
 // --- REGISTER ---
 router.post(
   '/register',
@@ -22,8 +31,8 @@ router.post(
     try {
       const { name, email, password, role = 'student' } = req.body;
 
-      if (!/^[a-z0-9._%+-]+@student\.belgiumcampus\.ac\.za$/i.test(email)) {
-        return res.status(400).json({ error: 'Campus student email required' });
+      if (!emailAllowedForRole(email, role)) {
+        return res.status(400).json({ error: 'Email domain not allowed for this role' });
       }
 
       const exists = await User.findOne({ email });
@@ -63,7 +72,7 @@ router.post(
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour to match JWT expiry
+        maxAge: 60 * 60 * 1000,
       });
 
       res.status(200).json({

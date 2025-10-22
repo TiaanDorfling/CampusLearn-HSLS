@@ -1,279 +1,406 @@
-################################################################################
-# CAMPUSLEARN FULL BACKEND TEST SUITE (.http)
-# Backend: http://localhost:5000
-################################################################################
+# ============================================================================
+# CampusLearn Backend API – COMPLETE Test Suite
+# Updated: 2025-10-22  (matches current backend)
+# Requires: server running at http://127.0.0.1:5000
+# Notes:
+#  - This suite uses cookie-based auth (jwt cookie). Each login captures a cookie
+#    into a variable for subsequent calls.
+#  - Domains enforced:
+#       student  → @student.belgiumcampus.ac.za
+#       tutor/admin → @belgiumcampus.ac.za
+# ============================================================================
 
-@baseUrl = http://localhost:5000
-@jwt = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDgxNzY0NCwiZXhwIjoxNzYwODIxMjQ0fQ.aGrd5XBbBvqxsKaunvMr2YruhY94FOwS4JEPIjpSueU
+@host = http://127.0.0.1:5000
+@base = {{host}}/api
+@ct = application/json
 
+### --------------------------------------------------------------------------
+### 0. Health & Diagnostics
+### --------------------------------------------------------------------------
 
-################################################################################
-# 1️⃣ AUTHENTICATION
-################################################################################
+GET {{host}}/healthz
 
-### Register Student
-POST {{baseUrl}}/api/auth/register
-Content-Type: application/json
+###
+GET {{base}}/health
+
+###
+GET {{base}}/index
+### (if you want to see env keys)
+GET {{base}}/health/env-keys
+
+### --------------------------------------------------------------------------
+### 1. AUTH
+### --------------------------------------------------------------------------
+
+# Register Student
+POST {{base}}/auth/register
+Content-Type: {{ct}}
 
 {
-  "name": "Test Student",
-  "email": "student1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!",
+  "name": "Alice Student",
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!",
   "role": "student"
 }
 
-### Register Tutor
-POST {{baseUrl}}/api/auth/register
-Content-Type: application/json
+###
+
+# Register Tutor
+POST {{base}}/auth/register
+Content-Type: {{ct}}
 
 {
-  "name": "Tutor Example",
-  "email": "tutor1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!",
+  "name": "John Doe",
+  "email": "john.doe@belgiumcampus.ac.za",
+  "password": "Password123!",
   "role": "tutor"
 }
 
-### Login (Student)
-POST {{baseUrl}}/api/auth/login
-Content-Type: application/json
+###
+
+# Register Admin
+POST {{base}}/auth/register
+Content-Type: {{ct}}
 
 {
-  "email": "student1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!"
+  "name": "Jane Admin",
+  "email": "jane@admin.campuslearn.ac.za",
+  "password": "Password123!",
+  "role": "admin"
 }
 
-### Login (Tutor)
-POST {{baseUrl}}/api/auth/login
-Content-Type: application/json
+###
+
+# Login Student
+POST {{base}}/auth/login
+Content-Type: {{ct}}
 
 {
-  "email": "tutor1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!"
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!"
 }
 
-### Get Active Session
-GET {{baseUrl}}/api/auth/session
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+###
 
-### Logout
-POST {{baseUrl}}/api/auth/logout
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-
-################################################################################
-# 2️⃣ STUDENT PROFILE
-################################################################################
-
-### Get My Student Profile
-GET {{baseUrl}}/api/student/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-### Update My Student Profile
-PUT {{baseUrl}}/api/student/me
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+# Login Tutor
+POST {{base}}/auth/login
+Content-Type: {{ct}}
 
 {
-  "phone": "0812345678",
+  "email": "bob.tutor@belgiumcampus.ac.za",
+  "password": "Password123!"
+}
+
+###
+
+# Login Admin
+POST {{base}}/auth/login
+Content-Type: {{ct}}
+
+{
+  "email": "cara.admin@belgiumcampus.ac.za",
+  "password": "Password123!"
+}
+
+###
+
+# Validate Session (student)
+GET {{base}}/auth/session
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Logout (student)
+POST {{base}}/auth/logout
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+### --------------------------------------------------------------------------
+### 2. USERS (read-only list for now; admin management via /api/admin)
+### --------------------------------------------------------------------------
+
+# List users (public read; your /api/users uses auth(false))
+GET {{base}}/users?limit=50
+
+### --------------------------------------------------------------------------
+### 3. STUDENT PROFILE
+### --------------------------------------------------------------------------
+
+# Create/Update my student profile
+PUT {{base}}/student/me
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Content-Type: application/json
+
+{
+  "studentNumber": "S1002003",
   "year": "3",
-  "about": "Passionate software engineering student at Belgium Campus",
-  "emergencyContact": {
-    "name": "John Doe",
-    "phone": "0823456789"
-  },
-  "courses": [
-    { "code": "SEN381", "name": "Software Engineering" },
-    { "code": "DBS200", "name": "Database Systems" }
-  ]
+  "phone": "0123456789",
+  "about": "Enjoys databases and web dev",
+  "emergencyContact": { "name": "Parent", "phone": "0987654321" }
 }
 
+###
 
-################################################################################
-# 3️⃣ TUTOR PROFILE
-################################################################################
+# Get my student profile
+GET {{base}}/student/me
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
 
-### Get My Tutor Profile
-GET {{baseUrl}}/api/tutor/me
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+### --------------------------------------------------------------------------
+### 4. TUTOR PROFILE + STUDENTS LIST
+### --------------------------------------------------------------------------
 
-### Update My Tutor Profile
-PUT {{baseUrl}}/api/tutor/me
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+# Create/Update my tutor profile
+PUT {{base}}/tutor/me
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Content-Type: {{ct}}
 
 {
-  "bio": "Tutor for SEN381 and DBS200, passionate about helping students succeed.",
-  "phone": "0835556666",
+  "bio": "Web and DB tutor",
+  "phone": "0212345678",
   "assignedModules": ["SEN381", "DBS200"],
-  "tutorTopics": ["Software Architecture", "Database Design"],
-  "uploadedResources": [
-    { "title": "Design Patterns Lecture Notes", "resourceID": "652f6d000000000000000000" }
-  ]
+  "tutorTopics": ["React", "MongoDB"]
 }
 
+###
 
-################################################################################
-# 4️⃣ TOPICS MODULE (Updated)
-################################################################################
+# Get my tutor profile
+GET {{base}}/tutor/me
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
 
-### Create a New Topic
-POST {{baseUrl}}/api/topics
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+###
+
+# List students for a tutor (replace {{tutorId}} with _id from previous call)
+GET {{base}}/tutor/68f89931d87ae1274c6d1874/students?page=1&q=
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+
+### --------------------------------------------------------------------------
+### 5. TOPICS
+### --------------------------------------------------------------------------
+
+# Create topic (any logged-in user; you can restrict later)
+POST {{base}}/topics
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Content-Type: {{ct}}
 
 {
-  "title": "SEN381 – Software Architecture",
-  "description": "Discussion and help for software engineering patterns.",
+  "title": "SEN381 – Software Engineering",
+  "description": "Questions, resources, and announcements for SEN381.",
+  "moduleCode": "SEN381",
+  "tags": ["engineering", "design"]
+}
+
+###
+
+# List topics
+GET {{base}}/topics
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Subscribe to a topic (replace {{topicId}})
+POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/subscribe
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Unsubscribe
+DELETE {{base}}/topics/68f401516e1bb3dd5e43cd3a/unsubscribe
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Upload resource to topic (replace {{topicId}})
+# Requires an existing file at ./uploads/sample.pdf (relative to this .http)
+POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/resource
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Content-Type: multipart/form-data; boundary=Boundary
+--Boundary
+Content-Disposition: form-data; name="resourceFile"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./uploads/Notes.pdf >
+
+###
+
+# Broadcast announcement on a topic
+POST {{base}}/topics/68f401516e1bb3dd5e43cd3a/broadcast
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Content-Type: {{ct}}
+
+{
+  "message": "Reminder: Project milestone due Friday."
+}
+
+### --------------------------------------------------------------------------
+### 6. FORUM (categories, threads, posts)
+### --------------------------------------------------------------------------
+
+# Create Forum Category
+POST {{base}}/forum/categories
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
+Content-Type: {{ct}}
+
+{
+  "name": "General",
+  "description": "General campus discussion"
+}
+
+###
+
+# List Categories
+GET {{base}}/forum/categories
+
+###
+
+# Create Thread (use categoryId)
+POST {{base}}/forum/threads
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Content-Type: {{ct}}
+
+{
+  "categoryId": "68f89a2935392717ca2b5d55",
+  "title": "Help with recursion"
+}
+
+###
+
+# List Threads (optionally by category)
+GET {{base}}/forum/threads?category=68f89a2935392717ca2b5d55
+
+###
+
+# Create Post (use threadId)
+POST {{base}}/forum/posts
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+Content-Type: {{ct}}
+
+{
+  "threadId": "68f89a4035392717ca2b5d57",
+  "content": "Can someone explain base cases?"
+}
+
+###
+
+# List Posts in thread
+GET {{base}}/forum/posts?thread=68f89a4035392717ca2b5d57
+
+### --------------------------------------------------------------------------
+### 7. PRIVATE MESSAGES (DM via /api/pm)
+### --------------------------------------------------------------------------
+
+# Send DM (student → tutor)
+POST {{base}}/pm
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyNDQ0NiwiZXhwIjoxNzYxMTI4MDQ2fQ.Iu78OtMl06f-7D3GDFacGer5lqoUOdeThashjATFmX8
+Content-Type: {{ct}}
+
+{
+  "toUserId": "68f893ffac1579b5cadb53e2",
+  "subject": "Software Problems",
+  "body": "I am having problems understanding software design patterns. Can you help?"
+}
+
+###
+
+# Get my DMs (student)
+GET {{base}}/pm
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Mark a DM as read (message id)
+PATCH {{base}}/pm/68f8987035392717ca2b5d3a/read
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+### --------------------------------------------------------------------------
+### 8. QUESTIONS & RESPONSES
+### --------------------------------------------------------------------------
+
+# Ask a question (student)
+POST {{base}}/questions
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjk5OSwiZXhwIjoxNzYxMTI2NTk5fQ.99ewMa_dQ3BJEjodibE2TIZ9QR04Ece07UsUKB8vv14
+Content-Type: application/json
+
+{
+  "title": "Clarification on recursion",
+  "body": "Can a recursive call occur after a loop?",
   "moduleCode": "SEN381"
 }
 
-### List All Topics
-GET {{baseUrl}}/api/topics
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+###
 
-### Subscribe to a Topic (Student)
-# Replace with real topic _id from "List All Topics"
-POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/subscribe
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-### Unsubscribe from a Topic
-DELETE {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/unsubscribe
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-### Broadcast a Tutor Message
-POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/broadcast
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+# Tutor responds (use questionId)
+POST {{base}}/questions/68f89acd35392717ca2b5d61/response
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjI1NzMsImV4cCI6MTc2MTEyNjE3M30.scVcjpq6ooOOMnKvmAgRAShb4Tamuu2HeisfLqKlrRk
+Content-Type: {{ct}}
 
 {
-  "message": "Reminder: Submit your SEN381 project proposal by Friday."
+  "content": "Yes, but ensure your base case will be reached.",
+  "isAnonymous": false
 }
 
-### Upload Resource to Topic
-POST {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/resource
-Content-Type: multipart/form-data; boundary=---------------------------735323031399963166993862150
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+###
 
------------------------------735323031399963166993862150
-Content-Disposition: form-data; name="resourceFile"; filename="notes.pdf"
-Content-Type: application/pdf
+# Get responses for a question
+GET {{base}}/questions/68f89acd35392717ca2b5d61/responses
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjk5OSwiZXhwIjoxNzYxMTI2NTk5fQ.99ewMa_dQ3BJEjodibE2TIZ9QR04Ece07UsUKB8vv14
 
-< backend\uploads\Notes.pdf >
------------------------------735323031399963166993862150--
+###
 
-### List Uploaded Topic Resources
-GET {{baseUrl}}/api/topics/68f401516e1bb3dd5e43cd3a/resources
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+# List all questions
+GET {{base}}/questions
 
+### --------------------------------------------------------------------------
+### 9. AI (Simulated)
+### --------------------------------------------------------------------------
 
-################################################################################
-# 5️⃣ FORUM MODULE
-################################################################################
-
-### Create Forum Category
-POST {{baseUrl}}/api/forum/categories
+POST {{base}}/ai/chat
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
 Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
 
 {
-  "name": "SEN381 – Software Engineering",
-  "description": "Discussion space for software architecture, testing, and design."
+  "prompt": "Explain JWT briefly"
 }
 
-### Get All Forum Categories
-GET {{baseUrl}}/api/forum/categories
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+### --------------------------------------------------------------------------
+### 10. NOTIFICATIONS
+### --------------------------------------------------------------------------
 
-### Create Forum Thread
-POST {{baseUrl}}/api/forum/threads
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+# List my notifications
+GET {{base}}/notifications
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ZDM1MzkyNzE3Y2EyYjVkMTYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMjM5OTYsImV4cCI6MTc2MTEyNzU5Nn0.CK33NM-wu6LDBzdFHp1_rMJ8ipVupJrlKYg9V7Keu0o
+
+###
+
+# Mark read (use notifId)
+PATCH {{base}}/notifications/{{notifId}}/read
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+###
+
+# Delete notification
+DELETE {{base}}/notifications/{{notifId}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEyMjAyMSwiZXhwIjoxNzYxMTI1NjIxfQ.0S1F8VTDzRaG4wPkbvu8m3O07S55CTjd-p6hhpo7ovA
+
+### --------------------------------------------------------------------------
+### 11. ADMIN
+### --------------------------------------------------------------------------
+
+# List users (admin panel)
+GET {{base}}/admin/users
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
+
+###
+
+# Update user role (admin) – set to tutor/student/admin
+PATCH {{base}}/admin/users/{{userId}}/role
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
+Content-Type: {{ct}}
 
 {
-  "categoryId": "REPLACE_CATEGORY_ID",
-  "title": "Understanding Layered Architecture Pattern"
+  "role": "tutor"
 }
 
-### Get Threads in Category
-GET {{baseUrl}}/api/forum/threads?category=REPLACE_CATEGORY_ID
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
+###
 
-### Create Forum Post
-POST {{baseUrl}}/api/forum/posts
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "threadId": "REPLACE_THREAD_ID",
-  "content": "Layered architecture divides the app into presentation, business, and data layers."
-}
-
-### Upvote a Post
-POST {{baseUrl}}/api/forum/posts/upvote
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "postId": "REPLACE_POST_ID"
-}
-
-
-################################################################################
-# 6️⃣ PRIVATE MESSAGING
-################################################################################
-
-### Create Conversation (Student ↔ Tutor)
-POST {{baseUrl}}/api/messages/conversations
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "participants": [
-    { "user": "68ef7fdb58d652878d928877", "role": "student" },
-    { "user": "68ef7cf258d652878d928866", "role": "tutor" }
-  ]
-}
-
-### List My Conversations
-GET {{baseUrl}}/api/messages/conversations
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-### Send Message in Conversation
-POST {{baseUrl}}/api/messages/REPLACE_CONVERSATION_ID
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "text": "Hello! Could you help me with my SEN381 project structure?"
-}
-
-### Get Messages in Conversation
-GET {{baseUrl}}/api/messages/REPLACE_CONVERSATION_ID
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-### Mark Message as Read
-PUT {{baseUrl}}/api/messages/read
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "messageId": "REPLACE_MESSAGE_ID"
-}
-
-
-################################################################################
-# 7️⃣ AI CHATBOT (Gemini)
-################################################################################
-
-POST {{baseUrl}}/api/ai/chat
-Content-Type: application/json
-Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA4MjE4MDUsImV4cCI6MTc2MDgyNTQwNX0.8zADeER13pILCVyVlSyHFCp7Vieg9R08zn5WJOjvIA8
-
-{
-  "message": "Explain microservices vs layered architecture."
-}
-
-
-################################################################################
-# ✅ END OF SUITE
-################################################################################
+# Delete user (admin)
+DELETE {{base}}/admin/users/{{userId}}
+Cookie: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTNmZmFjMTU3OWI1Y2FkYjUzZTIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMjI4MzUsImV4cCI6MTc2MTEyNjQzNX0.Wm_0v_d0AohB7b0BUxCt8FEvXdESj3VXIjMgxXokUl4
