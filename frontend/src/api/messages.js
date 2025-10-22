@@ -1,120 +1,124 @@
-// frontend/src/api/messages.js
-import api from "./axios";
+import axios from "axios";
 
-/* ─────────────────────────────
- * Announcements / Notifications
- * ──────────────────────────── */
-export async function listBroadcasts({ onlyUnread = false } = {}) {
-  // GET /api/notifications?onlyUnread=true|false → { items: [...] }
-  const { data } = await api.get("/notifications", { params: { onlyUnread } });
-  return data;
+const API_BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/+$/, "");
+const opts = { withCredentials: true, timeout: 15000 };
+
+function friendlyError(err, fallback) {
+  const msg =
+    err?.response?.data?.friendlyMessage ||
+    err?.response?.data?.message ||
+    err?.message ||
+    fallback;
+  const e = new Error(msg);
+  e.status = err?.response?.status;
+  return e;
 }
 
-export async function sendBroadcast({ title, body, courseCode }) {
-  // If your backend supports it:
-  const { data } = await api.post("/notifications", { title, body, courseCode });
-  return data;
-}
+/* ============
+   Private Messages (PM)
+   ============ */
 
-export async function markBroadcastRead(id) {
-  // Try multiple flavors (PATCH/PUT)
-  const attempts = [
-    () => api.patch(`/notifications/${id}/read`),
-    () => api.put(`/notifications/${id}/read`),
-  ];
-  for (const attempt of attempts) {
-    try {
-      const { data } = await attempt();
-      return data;
-    } catch (e) { /* try the next flavor */ }
+// GET /api/pm?onlyUnread=(true|false)&limit=&cursor=
+export async function listPM({ onlyUnread = false, limit, cursor } = {}) {
+  try {
+    const params = { onlyUnread };
+    if (limit) params.limit = limit;
+    if (cursor) params.cursor = cursor;
+    const { data } = await axios.get(`${API_BASE}/pm`, { ...opts, params });
+    return {
+      items: Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []),
+      total: Number.isFinite(data?.total) ? data.total : undefined,
+      nextCursor: data?.nextCursor,
+    };
+  } catch (e) {
+    throw friendlyError(e, "Failed to load messages.");
   }
-  // As a very last resort, return a success-shaped object so UI doesn't regress
-  return { ok: false };
 }
 
-/* ─────────────────────────────
- * Private Messages (flat /pm)
- * ──────────────────────────── */
-export async function listPM({ onlyUnread = false } = {}) {
-  // GET /api/pm?onlyUnread=true|false → { items: [...] }
-  const { data } = await api.get("/pm", { params: { onlyUnread } });
-  return data;
+// POST /api/pm  { toUserId, subject, body }
+export async function sendPM({ toUserId, subject = "", body = "" }) {
+  try {
+    const { data } = await axios.post(`${API_BASE}/pm`, { toUserId, subject, body }, opts);
+    return data;
+  } catch (e) {
+    throw friendlyError(e, "Failed to send message.");
+  }
 }
 
-export async function sendPM({ toUserId, body, subject }) {
-  // POST /api/pm  body { toUserId, subject, body }
-  const { data } = await api.post("/pm", { toUserId, body, subject });
-  return data;
-}
-
-/**
- * Mark a SINGLE message as read.
- * Tries (in order):
- *   1) PUT  /messages/read          { messageId }
- *   2) PUT  /pm/read                { id }
- *   3) PUT  /pm/read                { messageId }
- *   4) PATCH /pm/:id/read
- *   5) PUT  /pm/:id/read
- */
+// POST /api/pm/:id/read
 export async function markPMRead(id) {
-  const attempts = [
-    () => api.put(`/messages/read`, { messageId: id }),
-    () => api.put(`/pm/read`, { id }),
-    () => api.put(`/pm/read`, { messageId: id }),
-    () => api.patch(`/pm/${id}/read`),
-    () => api.put(`/pm/${id}/read`),
-  ];
-  for (const attempt of attempts) {
-    try {
-      const { data } = await attempt();
-      return data;
-    } catch (e) { /* keep falling back */ }
+  try {
+    const { data } = await axios.post(`${API_BASE}/pm/${encodeURIComponent(id)}/read`, null, opts);
+    return data;
+  } catch (e) {
+    throw friendlyError(e, "Failed to mark message read.");
   }
-  return { ok: false };
 }
 
-/**
- * Mark MANY messages as read.
- * Tries (in order):
- *   1) PUT  /messages/read-many     { messageIds }
- *   2) PUT  /pm/read-many           { messageIds }
- *   3) PUT  /pm/read-many           { ids }
- *   4) PATCH /pm/read-many          { messageIds }
- *   5) PATCH /pm/read-many          { ids }
- *   6) Fallback to calling markPMRead(id) one-by-one
- */
+// POST /api/pm/read-many  { ids: [...] }
 export async function markPMReadMany(ids = []) {
-  const messageIds = Array.from(new Set((ids || []).map(String))).filter(Boolean);
-  if (messageIds.length === 0) return { ok: true, modifiedCount: 0 };
-
-  const attempts = [
-    () => api.put(`/messages/read-many`, { messageIds }),
-    () => api.put(`/pm/read-many`, { messageIds }),
-    () => api.put(`/pm/read-many`, { ids: messageIds }),
-    () => api.patch(`/pm/read-many`, { messageIds }),
-    () => api.patch(`/pm/read-many`, { ids: messageIds }),
-  ];
-
-  for (const attempt of attempts) {
-    try {
-      const { data } = await attempt();
-      return data;
-    } catch (e) { /* keep trying */ }
+  try {
+    const { data } = await axios.post(`${API_BASE}/pm/read-many`, { ids }, opts);
+    return data;
+  } catch (e) {
+    throw friendlyError(e, "Failed to mark messages read.");
   }
-
-  // Final fallback: do them individually with the single-message helper
-  const results = await Promise.all(
-    messageIds.map((id) => markPMRead(id).catch(() => null))
-  );
-  const modified = results.filter(Boolean).length;
-  return { ok: modified > 0, modifiedCount: modified };
 }
 
-/**
- * If you later wire conversations:
- * PUT /messages/:conversationId/read-all
- */
-export async function markConversationReadAll(conversationId) {
-  const { data } = await api.put(`/messages/${conversationId}/read-all`);
-  return data;
+/* ============
+   Announcements / Broadcasts
+   ============ */
+
+// GET /api/notifications?onlyUnread=(true|false)&limit=&cursor=
+export async function listBroadcasts({ onlyUnread = false, limit, cursor } = {}) {
+  try {
+    const params = { onlyUnread };
+    if (limit) params.limit = limit;
+    if (cursor) params.cursor = cursor;
+    const { data } = await axios.get(`${API_BASE}/notifications`, { ...opts, params });
+    return {
+      items: Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []),
+      total: Number.isFinite(data?.total) ? data.total : undefined,
+      nextCursor: data?.nextCursor,
+    };
+  } catch (e) {
+    throw friendlyError(e, "Failed to load announcements.");
+  }
+}
+
+// POST /api/notifications/broadcast  { title, body, courseCode }
+export async function sendBroadcast({ title, body, courseCode }) {
+  try {
+    const { data } = await axios.post(
+      `${API_BASE}/notifications/broadcast`,
+      { title, body, courseCode },
+      opts
+    );
+    return data;
+  } catch (e) {
+    throw friendlyError(e, "Failed to send announcement.");
+  }
+}
+
+// POST /api/notifications/:id/read
+export async function markBroadcastRead(id) {
+  try {
+    const { data } = await axios.post(
+      `${API_BASE}/notifications/${encodeURIComponent(id)}/read`,
+      null,
+      opts
+    );
+    return data;
+  } catch (e) {
+    throw friendlyError(e, "Failed to mark announcement read.");
+  }
+}
+
+/* ============
+   Optional convenience: small unread preview for top-bars
+   (uses /pm only, never hits /messages/unread)
+   ============ */
+export async function listUnreadPreview(limit = 3) {
+  const res = await listPM({ onlyUnread: true, limit });
+  return res.items || [];
 }

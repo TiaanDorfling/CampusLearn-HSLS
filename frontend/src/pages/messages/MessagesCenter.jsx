@@ -85,7 +85,7 @@ function withDayDividers(thread) {
   return out;
 }
 
-/* ----- id + party utilities (robust to varying shapes) ----- */
+/* ----- id + party utilities ----- */
 function firstVal(...vals) {
   for (const v of vals) {
     if (v !== undefined && v !== null && String(v).length) return v;
@@ -165,14 +165,12 @@ function shortId(id) {
   return s ? s.slice(-6) : "??????";
 }
 
-/* ----- read helpers (PM + Announcements) ----- */
-// prefer message.meId if present (server-provided "this is you" id)
+/* ----- read helpers ----- */
 function resolveMeForMessage(m, appMeId) {
   return String(m?.meId || appMeId || "");
 }
 
 function readArrayToStrings(m) {
-  // normalize isReadBy/readBy in case values are ObjectIds or objects
   const arr = (m.isReadBy || m.readBy || []).map((v) => {
     if (typeof v === "object" && v) return String(v._id || v.id || v);
     return String(v);
@@ -264,7 +262,7 @@ function getCounterparty(m, meId) {
 function isPMUnreadForMe(m, meId) {
   const fromId = extractFromId(m);
   const my = resolveMeForMessage(m, meId);
-  if (String(fromId) === String(my)) return false; // outgoing isn't unread for me
+  if (String(fromId) === String(my)) return false;
   return !wasReadByMe(m, meId);
 }
 
@@ -311,7 +309,6 @@ function buildCounterpartyGroups(items, meId) {
     }));
 }
 
-// Build a full thread for the selected group (used for mark-all-read + render)
 function buildFullThread(allMessages, group, meId) {
   if (!group) return [];
 
@@ -382,10 +379,8 @@ export default function MessagesCenter() {
     return items.map((m) => bcOverlayRef.current.has(String(m._id)) ? markLocalAsRead(m, meId) : m);
   }
 
-  // tiny sleep helper
   function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-  // Confirm PM reads really persisted on the server (few quick polls)
   async function ensurePMReadsPersist(targetIds, appMe) {
     const targets = new Set((targetIds || []).map(String));
     if (targets.size === 0) return true;
@@ -403,7 +398,6 @@ export default function MessagesCenter() {
     return false;
   }
 
-  // Confirm announcement read persisted
   async function ensureBCReadPersist(id, appMe) {
     if (!id) return true;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -440,7 +434,6 @@ export default function MessagesCenter() {
     [unreadPMOnly, meId]
   );
 
-  // auto-select a chat
   useEffect(() => {
     if (tab === Tab.CHATS && !selectedKey && groupsAll.length) {
       setSelectedKey(groupsAll[0].key);
@@ -449,7 +442,6 @@ export default function MessagesCenter() {
 
   const selectedGroup = groupsAll.find((g) => g.key === selectedKey) || null;
 
-  // optimistic local updates so badges disappear immediately
   function markLocalPMsAsRead(ids = []) {
     if (!ids.length) return;
     overlayPM(ids);
@@ -560,7 +552,6 @@ export default function MessagesCenter() {
               items={bc}
               showOnlyUnread
               onRead={async (id) => {
-                // optimistic + persist + confirm + reconcile
                 markLocalBCAsRead(id);
                 await markBroadcastRead(id);
                 await ensureBCReadPersist(id, meId);
@@ -612,20 +603,15 @@ export default function MessagesCenter() {
               if (!ids?.length) return;
               const uniq = Array.from(new Set(ids.map(String)));
 
-              // 1) Optimistic badges off immediately + overlay
               markLocalPMsAsRead(uniq);
 
-              // 2) Persist (bulk; tries all backend flavors)
               try {
                 await markPMReadMany(uniq);
               } catch {
                 await Promise.all(uniq.map((id) => markPMRead(id).catch(() => null)));
               }
 
-              // 3) Confirm server reflects the read state
               await ensurePMReadsPersist(uniq, meId);
-
-              // 4) Reconcile from server (so hard refresh later stays read)
               await refresh();
             }}
             onReply={async (text) => {
@@ -652,7 +638,6 @@ function ThreadView({ meId, group, allMessages, onMarkReadMany, onReply }) {
   const [draft, setDraft] = useState("");
   const scrollerRef = useRef(null);
 
-  // Build full thread for the selected chat (ascending)
   const fullThread = useMemo(
     () =>
       buildFullThread(allMessages || [], group, meId).sort(
@@ -662,14 +647,12 @@ function ThreadView({ meId, group, allMessages, onMarkReadMany, onReply }) {
     [allMessages, group, meId]
   );
 
-  // OPEN-ONCE: mark *all* unread in this thread as read
   useEffect(() => {
     const unreadIds = fullThread.filter((m) => isPMUnreadForMe(m, meId)).map((m) => m._id);
     if (unreadIds.length) onMarkReadMany?.(unreadIds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group.key, fullThread.length, meId]);
 
-  // Scroll to bottom whenever messages change
   useEffect(() => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
@@ -907,7 +890,6 @@ function AnnouncementList({
             <button
               className="text-xs underline mt-1"
               onClick={async () => {
-                // optimistic + persist + confirm + reconcile
                 await onRead(m._id);
                 await onChanged?.();
               }}
@@ -931,7 +913,6 @@ function Bubble({ meId, msg }) {
 
   const isUnreadForMe = !mine && !wasReadByMe(msg, my);
 
-  // Your messages LEFT (plain), received RIGHT (dark)
   return (
     <div className={`max-w-[80%] ${mine ? "mr-auto" : "ml-auto"}`}>
       <div
@@ -942,7 +923,7 @@ function Bubble({ meId, msg }) {
         }`}
       >
         {msg.subject ? (
-          <div className={`text-[11px] mb-1 ${mine ? "opacity-70" : "opacity-90"}`}>
+          <div className={`text:[11px] mb-1 ${mine ? "opacity-70" : "opacity-90"}`}>
             {msg.subject}
           </div>
         ) : null}
