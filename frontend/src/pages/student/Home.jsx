@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MessagesDrawer from "../../components/messages/MessagesDrawer";
 import { getUnreadPreview } from "../../api/home";
+import StudentAssistantCard from "../../components/assistant/StudentAssistantCard.jsx";
 
 // Images
 import it1 from "../../assets/it1.jpg";
@@ -137,10 +138,9 @@ export default function StudentHome(){
   const ytEmbedUrl="https://www.youtube.com/embed/QPzmsQ86_HM?rel=0&modestbranding=1";
 
   // Group modules
-  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});
-
+  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{}); // eslint-disable-line
   // Group events by date (for centered sections)
-  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});
+  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{}); // eslint-disable-line
 
   return (
     <div className="max-w-screen-2xl mx-auto px-6 space-y-12">
@@ -166,6 +166,8 @@ export default function StudentHome(){
           <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
           <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
           <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
+          {/* NEW: Assistant quick action */}
+          <QuickAction onClick={()=>nav("/app/assistant")} label="Assistant" />
         </div>
       </section>
 
@@ -193,6 +195,9 @@ export default function StudentHome(){
           </Card>
 
           <div className="space-y-8">
+            {/* NEW: Quick Ask Assistant card */}
+            <StudentAssistantCard />
+
             {nextClass && (
               <Card>
                 <div className="flex items-center justify-between">

@@ -20,12 +20,22 @@ export default function StudentDashboard() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+<<<<<<< Updated upstream
   // ---------- fetch student (with fallbacks) ----------
+=======
+  // Allow proxy (/api/...) if VITE_API_URL is not provided
+  const API_BASE = import.meta.env.VITE_API_URL || "";
+  // If no API base is set, we can simulate save so UI still works
+  const USE_DEMO_SAVE = !import.meta.env.VITE_API_URL;
+
+  // ✅ Fetch student data from backend
+>>>>>>> Stashed changes
   useEffect(() => {
     const fetchStudent = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
+<<<<<<< Updated upstream
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         let res;
@@ -46,6 +56,13 @@ export default function StudentDashboard() {
         setStudent(s);
         setError("");
         await hydrateCourses(s);
+=======
+        const url = `${API_BASE}/api/students/me`; // if 404, try /api/student/me
+        const res = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStudent(res.data.student);
+>>>>>>> Stashed changes
       } catch (err) {
         console.error("Failed to load student:", err?.response?.status, err?.response?.data || err);
         setError(
@@ -86,7 +103,7 @@ export default function StudentDashboard() {
     };
 
     fetchStudent();
-  }, []);
+  }, [API_BASE]);
 
   // ---------- profile form ----------
   const [form, setForm] = useState({
@@ -109,11 +126,32 @@ export default function StudentDashboard() {
     }
   }, [student]);
 
+  // ✅ Single onSave with real call + demo fallback (no duplicate definitions)
   const onSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
+      if (USE_DEMO_SAVE) {
+        // Simulate save so UI doesn’t block development
+        await new Promise((r) => setTimeout(r, 800));
+        // Optimistically update local student so UI reflects changes
+        setStudent((prev) => prev ? {
+          ...prev,
+          phone: form.phone,
+          year: form.year,
+          about: form.about,
+          emergencyContact: {
+            ...(prev.emergencyContact || {}),
+            name: form.emergencyContactName,
+            phone: form.emergencyContactPhone,
+          },
+        } : prev);
+        alert("Profile updated (demo). Configure VITE_API_URL to use the API.");
+        return;
+      }
+
       const token = localStorage.getItem("token");
+<<<<<<< Updated upstream
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const body = {
         phone: form.phone,
@@ -142,6 +180,32 @@ export default function StudentDashboard() {
         },
       }));
 
+=======
+      if (!token) throw new Error("No auth token found");
+
+      const url = `${API_BASE}/api/students/me`; // if 404, switch to /api/student/me
+      const { data } = await axios.put(url, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // If backend returns updated student, use it; else merge locally
+      if (data?.student) {
+        setStudent(data.student);
+      } else {
+        setStudent((prev) => prev ? {
+          ...prev,
+          phone: form.phone,
+          year: form.year,
+          about: form.about,
+          emergencyContact: {
+            ...(prev.emergencyContact || {}),
+            name: form.emergencyContactName,
+            phone: form.emergencyContactPhone,
+          },
+        } : prev);
+      }
+
+>>>>>>> Stashed changes
       alert("Profile updated successfully!");
     } catch (err) {
       console.error(err);
@@ -156,6 +220,7 @@ export default function StudentDashboard() {
   if (error)   return <div className="p-10 text-redbrown text-center">{error}</div>;
   if (!student) return <div className="p-10 text-center">No student found.</div>;
 
+<<<<<<< Updated upstream
   // ---------- demo content for overview (styled like admin) ----------
   const upcomingTasks = [
     { id: 1, task: "Finish React assignment", deadline: "Today",    priority: "high"   },
@@ -175,6 +240,8 @@ export default function StudentDashboard() {
     { id: 4, type: "meeting",    user: "You", action: "booked tutor session",         time: "3 days ago" },
   ];
 
+=======
+>>>>>>> Stashed changes
   const schedule = [
     { day: "Mon", start: "09:00", end: "10:30", title: "SEN381", location: "B201", color: "bg-accent" },
     { day: "Tue", start: "11:00", end: "12:30", title: "PRG381", location: "C105", color: "bg-lavender" },
@@ -197,11 +264,20 @@ export default function StudentDashboard() {
 
   const courseCount = enrolledCourses?.length || student?.courses?.length || 0;
 
+  const courseCount = Array.isArray(student.courses) ? student.courses.length : 0;
+
   const stats = [
+<<<<<<< Updated upstream
     { label: "Enrolled Courses", value: courseCount, icon: BookOpen,     color: "bg-primary",   change: "+1"  },
     { label: "Avg Grade",        value: "B+",        icon: TrendingUp,   color: "bg-accent",    change: "—"   },
     { label: "Upcoming Events",  value: "3",         icon: Calendar,     color: "bg-lavender",  change: "+2"  },
     { label: "Completed Tasks",  value: "12/15",     icon: CheckCircle2, color: "bg-redbrown",  change: "+3"  },
+=======
+    { label: "Current Courses", value: courseCount, icon: BookOpen, color: "from-blue-500 to-blue-600", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+    { label: "Average Grade", value: "B+", icon: TrendingUp, color: "from-green-500 to-green-600", iconBg: "bg-green-100", iconColor: "text-green-600" },
+    { label: "Upcoming Events", value: upcomingEvents.length, icon: Calendar, color: "from-purple-500 to-purple-600", iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+    { label: "Completed Tasks", value: "12/15", icon: CheckCircle2, color: "from-orange-500 to-orange-600", iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+>>>>>>> Stashed changes
   ];
 
   return (
@@ -453,11 +529,33 @@ export default function StudentDashboard() {
         {/* COURSES (table like admin Courses) */}
         {activeView === "courses" && (
           <div className="space-y-6">
+<<<<<<< Updated upstream
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <h2 className="text-2xl font-heading font-bold text-primary">My Courses</h2>
                 <p className="text-primary-800 font-sans text-sm">Total: {courseCount} courses</p>
               </div>
+=======
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.isArray(student.courses) && student.courses.map((course) => (
+                <div key={course._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group cursor-pointer">
+                  <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <BookOpen className="w-12 h-12 text-white opacity-80" />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition">{course.code}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{course.name}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">View Details</span>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+>>>>>>> Stashed changes
             </div>
 
             {coursesLoading ? (
@@ -592,26 +690,44 @@ export default function StudentDashboard() {
               <h3 className="text-lg font-heading font-bold text-primary mb-6">Edit Profile</h3>
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <label className="block">
+<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Phone</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
+=======
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Phone</span>
+                  <input
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+>>>>>>> Stashed changes
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   />
                 </label>
                 <label className="block">
+<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Year</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
+=======
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Year</span>
+                  <input
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+>>>>>>> Stashed changes
                     value={form.year}
                     onChange={(e) => setForm({ ...form, year: e.target.value })}
                   />
                 </label>
               </div>
               <label className="block mb-4">
+<<<<<<< Updated upstream
                 <span className="text-sm font-heading text-primary mb-1 block">About</span>
                 <textarea
                   className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
+=======
+                <span className="text-sm font-medium text-gray-700 mb-1 block">About</span>
+                <textarea
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+>>>>>>> Stashed changes
                   rows="3"
                   value={form.about}
                   onChange={(e) => setForm({ ...form, about: e.target.value })}
@@ -619,24 +735,40 @@ export default function StudentDashboard() {
               </label>
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <label className="block">
+<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Emergency Contact Name</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
+=======
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Name</span>
+                  <input
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+>>>>>>> Stashed changes
                     value={form.emergencyContactName}
                     onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
                   />
                 </label>
                 <label className="block">
+<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Emergency Contact Phone</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
+=======
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Phone</span>
+                  <input
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+>>>>>>> Stashed changes
                     value={form.emergencyContactPhone}
                     onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
                   />
                 </label>
               </div>
               <button
+<<<<<<< Updated upstream
                 className="px-6 py-2 rounded-lg bg-primary text-cream font-button font-medium hover:bg-primary-800 transition shadow-md disabled:opacity-60"
+=======
+                className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60"
+>>>>>>> Stashed changes
                 disabled={saving}
               >
                 {saving ? "Saving..." : "Save Changes"}
