@@ -1,3 +1,4 @@
+// frontend/src/pages/tutor/Home.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MessagesDrawer from "../../components/messages/MessagesDrawer";
@@ -18,19 +19,43 @@ export default function TutorHome() {
     (async () => {
       try {
         setError("");
-        const r = await getTutorHome(); // aggregated endpoint
+        // Try aggregated endpoint
+        const r = await getTutorHome();
         if (!alive) return;
-        setNextSession(r?.nextSession || null);
-        setSchedule(Array.isArray(r?.schedule) ? r.schedule : []);
+
+        const events = normalizeEvents(Array.isArray(r?.schedule) ? r.schedule : []);
+        setSchedule(events);
         setUnread(Array.isArray(r?.unread?.items) ? r.unread.items : []);
-      } catch {
-        // fallback if backend route not ready
+
+        // Accept nextSession or nextClass; otherwise compute from events
+        const next = r?.nextSession || r?.nextClass || findNextFromSchedule(events);
+        setNextSession(next || null);
+
+        // If no events, fall back to teaching schedule
+        if (events.length === 0) {
+          try {
+            const [sched, msgs] = await Promise.all([
+              getMyTeachingSchedule(),
+              unread.length ? Promise.resolve({ items: unread }) : getUnreadPreview(3),
+            ]);
+            if (!alive) return;
+            const evts = normalizeEvents(Array.isArray(sched?.events) ? sched.events : []);
+            setSchedule(evts);
+            setUnread(Array.isArray(msgs?.items) ? msgs.items : unread);
+            setNextSession(sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null);
+          } catch {
+            /* keep whatever we have */
+          }
+        }
+      } catch (e) {
+        // Full fallback if aggregated endpoint fails
         try {
           const [sched, msgs] = await Promise.all([getMyTeachingSchedule(), getUnreadPreview(3)]);
           if (!alive) return;
-          setSchedule(Array.isArray(sched?.events) ? sched.events : []);
+          const evts = normalizeEvents(Array.isArray(sched?.events) ? sched.events : []);
+          setSchedule(evts);
           setUnread(Array.isArray(msgs?.items) ? msgs.items : []);
-          setNextSession(findNextFromSchedule(sched?.events || []));
+          setNextSession(sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null);
         } catch (e2) {
           setError(e2.message || "Failed to load home.");
         }
@@ -98,9 +123,15 @@ export default function TutorHome() {
                 <span className="text-xs text-primary/60">Local time</span>
               </div>
               <div className="mt-3 rounded-xl border bg-white p-4">
-                <div className="text-lg font-semibold">{nextSession.title}</div>
-                <div className="text-sm">{nextSession.day} {nextSession.start}–{nextSession.end}</div>
-                <div className="text-sm text-primary/70">{nextSession.location}</div>
+                <div className="text-lg font-semibold">
+                  {nextSession.title || nextSession.subject || "Session"}
+                </div>
+                <div className="text-sm">
+                  {nextSession.day} {nextSession.start}–{nextSession.end}
+                </div>
+                <div className="text-sm text-primary/70">
+                  {nextSession.location || nextSession.room || ""}
+                </div>
               </div>
             </Card>
           )}
@@ -151,7 +182,7 @@ export default function TutorHome() {
   );
 }
 
-/* Helpers (reused from student home) */
+/* Helpers */
 function Stat({ label, value, onClick }) {
   return (
     <button type="button" onClick={onClick}
@@ -171,17 +202,37 @@ function QuickAction({ label, onClick }) {
 function Card({ children }) {
   return <div className="rounded-2xl border bg-white p-5 shadow-sm">{children}</div>;
 }
+
+/** Accepts events in either {day,start,end,title/location} or {date, start, end} shapes. */
+function normalizeEvents(events = []) {
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return events.map(e => {
+    if (e.day) return e;
+    if (e.date) {
+      const d = new Date(e.date);
+      if (!isNaN(d)) {
+        return { ...e, day: days[d.getDay()] };
+      }
+    }
+    return e;
+  });
+}
+
 function countToday(events) {
   const today = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
   return (events || []).filter(e => (e.day || "").slice(0,3) === today.slice(0,3)).length;
 }
+
 function findNextFromSchedule(events) {
   const now = new Date();
   const weekday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][now.getDay()].slice(0,3);
   const mins = now.getHours() * 60 + now.getMinutes();
   const today = (events || []).filter(e => (e.day || "").slice(0,3).toLowerCase() === weekday.toLowerCase());
   const future = today
-    .map(e => ({ ...e, m: parseInt(e.start.split(":")[0]) * 60 + parseInt(e.start.split(":")[1]) }))
+    .map(e => ({
+      ...e,
+      m: parseInt(e.start?.split(":")[0] || 0) * 60 + parseInt(e.start?.split(":")[1] || 0),
+    }))
     .filter(e => e.m >= mins)
     .sort((a,b)=>a.m-b.m);
   return future[0] || null;

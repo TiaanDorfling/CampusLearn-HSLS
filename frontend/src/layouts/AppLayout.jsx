@@ -1,3 +1,4 @@
+// frontend/src/layouts/AppLayout.jsx
 import React, { useMemo } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import logo from "../logo.svg";
@@ -24,7 +25,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-cream relative">
+    <div className="min-h-screen bg-cream relative flex flex-col">
       {/* Decorative side accents */}
       <div aria-hidden className="pointer-events-none fixed inset-y-0 left-0 -z-10 w-40 md:w-56 lg:w-64">
         <div className="h-full w-full bg-linear-to-b from-lavender/25 via-cream/10 to-transparent blur-2xl" />
@@ -71,13 +72,27 @@ export default function AppLayout() {
       </header>
 
       {/* Content */}
-      <main className="min-h-[calc(100vh-4rem)]">
+      <main className="min-h-[calc(100vh-4rem)] flex-1">
         <div className="max-w-7xl mx-auto p-4 md:p-6">
           <div className="rounded-2xl border border-primary/10 bg-white/90 backdrop-blur-[1px] shadow-sm p-4 md:p-6">
             <Outlet />
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-4 bg-white/90 backdrop-blur-sm border-t border-primary/10">
+        <div className="h-[3px] bg-gradient-to-r from-lavender via-cream to-white" />
+        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="" className="h-6 w-6" />
+            <span className="text-sm font-medium text-primary">CampusLearn</span>
+          </div>
+          <div className="text-xs text-primary/60">
+            © {new Date().getFullYear()}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
