@@ -1,4 +1,3 @@
-// backend/model/QuestionModel.js
 import mongoose from "mongoose";
 
 const QuestionSchema = new mongoose.Schema(
@@ -24,7 +23,7 @@ const QuestionSchema = new mongoose.Schema(
     topic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Topic",
-      required: false, // optional in case it's a general question
+      required: false,
     },
     moduleCode: {
       type: String,
@@ -43,13 +42,9 @@ const QuestionSchema = new mongoose.Schema(
 );
 
 QuestionSchema.methods.addResponse = function(responseData) {
-    // Equivalent of this.responses.push(response)
     this.responses.push(responseData);
-    
-    // Equivalent of saving the document after modification
     return this.save(); 
 };
-
 
 const Question = mongoose.model("Question", QuestionSchema);
 export default Question;

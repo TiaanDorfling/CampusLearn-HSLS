@@ -1,4 +1,3 @@
-// backend/routes/submissions.js
 import express from "express";
 import mongoose from "mongoose";
 import { body, query, param } from "express-validator";
@@ -8,7 +7,6 @@ import Submission from "../model/Submission.js";
 import mongoosePkg from "mongoose";
 const { Schema } = mongoosePkg;
 
-// Inline Notification model (same pattern used elsewhere)
 const Notification =
   mongoose.models.Notification ||
   mongoose.model(
@@ -28,7 +26,6 @@ const Notification =
 
 const router = express.Router();
 
-// POST /api/submissions (student uploads metadata; file handled client-side or future endpoint)
 router.post(
   "/",
   auth(true),
@@ -55,7 +52,6 @@ router.post(
   }
 );
 
-// GET /api/submissions/mine
 router.get("/mine", auth(true), requireRole("student"), async (req, res) => {
   try {
     const items = await Submission.find({ student: req.user._id }).sort({ createdAt: -1 }).lean();
@@ -66,7 +62,6 @@ router.get("/mine", auth(true), requireRole("student"), async (req, res) => {
   }
 });
 
-// GET /api/submissions (tutor/admin) ?q=&course=&page=&limit=
 router.get(
   "/",
   auth(true),
@@ -109,7 +104,6 @@ router.get(
   }
 );
 
-// PATCH /api/submissions/:id (grade/feedback)
 router.patch(
   "/:id",
   auth(true),
@@ -133,7 +127,6 @@ router.patch(
       const sub = await Submission.findByIdAndUpdate(id, { $set: patch }, { new: true }).lean();
       if (!sub) return res.status(404).json({ error: "Submission not found" });
 
-      // Notify student on grade/feedback
       await Notification.create({
         userId: sub.student,
         type: "SUBMISSION_GRADED",

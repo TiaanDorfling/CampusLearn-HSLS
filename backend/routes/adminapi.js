@@ -1,8 +1,6 @@
-// backend/routes/adminapi.js
 import express from "express";
 import mongoose from "mongoose";
 
-// Admin-only models (safe names)
 import AdminUser from "../models/admin/AdminUser.js";
 import AdminStudent from "../models/admin/AdminStudent.js";
 import AdminTutor from "../models/admin/AdminTutor.js";

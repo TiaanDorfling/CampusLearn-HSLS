@@ -1,15 +1,9 @@
-// backend/routes/users.js
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import User from "../model/UserModel.js";
 
 const router = express.Router();
 
-/**
- * GET /api/users?limit=30&q=&role=
- * Public (or logged-in) list of users for pickers, search, etc.
- * Uses the single UserModel to avoid duplicate index warnings.
- */
 router.get("/", auth(false), async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(Number(req.query.limit) || 30, 100));

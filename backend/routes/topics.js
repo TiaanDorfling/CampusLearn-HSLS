@@ -8,9 +8,8 @@ import upload from "../utils/upload.js";
 
 const router = express.Router();
 
-// ============================================================================
+
 // GET /api/topics?keyword=
-// ============================================================================
 router.get(
   "/",
   [query("keyword").optional().isString().trim().isLength({ min: 1 })],
@@ -42,9 +41,7 @@ router.get(
   }
 );
 
-// ============================================================================
 // POST /api/topics  →  Create Topic
-// ============================================================================
 router.post(
   "/",
   auth(true),
@@ -77,9 +74,7 @@ router.post(
   }
 );
 
-// ============================================================================
 // POST /api/topics/:id/subscribe
-// ============================================================================
 router.post("/:id/subscribe", auth(true), async (req, res) => {
   try {
     const { id: topicId } = req.params;
@@ -101,9 +96,7 @@ router.post("/:id/subscribe", auth(true), async (req, res) => {
   }
 });
 
-// ============================================================================
 // DELETE /api/topics/:id/unsubscribe
-// ============================================================================
 router.delete("/:id/unsubscribe", auth(true), async (req, res) => {
   try {
     const { id: topicId } = req.params;
@@ -125,14 +118,10 @@ router.delete("/:id/unsubscribe", auth(true), async (req, res) => {
   }
 });
 
-// ============================================================================
 // POST /api/topics/:id/resource → upload file
-// Accepts form field name "resourceFile" OR "file".
-// ============================================================================
 router.post(
   "/:id/resource",
   auth(true),
-  // allow either field name
   (req, res, next) => {
     const handler = upload.single("resourceFile");
     handler(req, res, (err) => {
@@ -157,7 +146,7 @@ router.post(
 
       const resourceData = {
         fileName: file.originalname,
-        fileUrl: `/uploads/topic-resources/${file.filename}`, // served by app.js
+        fileUrl: `/uploads/topic-resources/${file.filename}`,
         uploadedBy: userId,
         uploadedAt: new Date(),
       };
@@ -175,9 +164,7 @@ router.post(
   }
 );
 
-// ============================================================================
 // POST /api/topics/:id/broadcast → tutor/admin messages
-// ============================================================================
 router.post("/:id/broadcast", auth(true), async (req, res) => {
   try {
     const { id: topicId } = req.params;

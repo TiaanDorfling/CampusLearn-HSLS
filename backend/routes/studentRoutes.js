@@ -1,4 +1,3 @@
-//backend/routes/studentRoutes.js
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import Student from "../model/Student.js";
@@ -6,7 +5,6 @@ import User from "../model/UserModel.js";
 
 const router = express.Router();
 
-// GET /api/students/me
 router.get("/me", auth(true), async (req, res) => {
   try {
     const uid = req.user._id || req.user.id;
@@ -27,7 +25,6 @@ router.get("/me", auth(true), async (req, res) => {
   }
 });
 
-// PUT /api/students/me
 router.put("/me", auth(true), async (req, res) => {
   try {
     const uid = req.user._id || req.user.id;

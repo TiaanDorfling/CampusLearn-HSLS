@@ -1,4 +1,3 @@
-// Plain admin profile linked 1:1 to a User (no discriminators needed)
 import mongoose from 'mongoose';
 
 const AdminProfileSchema = new mongoose.Schema(

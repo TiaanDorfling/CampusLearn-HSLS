@@ -1,4 +1,3 @@
-// backend/models/admin/AdminUser.js
 import mongoose from "mongoose";
 
 const AdminUserSchema = new mongoose.Schema(
@@ -10,6 +9,5 @@ const AdminUserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Different model name; same physical collection: "users"
 export default mongoose.models.AdminUser
   || mongoose.model("AdminUser", AdminUserSchema, "users");

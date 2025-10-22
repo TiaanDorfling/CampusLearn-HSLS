@@ -1,4 +1,3 @@
-// backend/routes/userRoute.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import { body } from "express-validator";
@@ -7,7 +6,6 @@ import { validate } from "../middleware/validate.js";
 import User from "../model/UserModel.js";
 import { updateProfile, adminUpdateUser } from "../controller/UserController.js";
 
-/** Keep email check aligned with current UserModel constraint */
 function validateEmailForRole(email, role = "student") {
   const reStudent = /^[a-z0-9._%+-]+@student\.belgiumcampus\.ac\.za$/i;
   return reStudent.test(String(email || ""));
@@ -15,13 +13,10 @@ function validateEmailForRole(email, role = "student") {
 
 const router = express.Router();
 
-// Update current user (profile)
 router.put("/update-user", auth(true), updateProfile);
 
-// Admin updates any user's profile
 router.put("/update/:id", auth(true), requireRole("admin"), adminUpdateUser);
 
-// Admin creates new user
 router.post(
   "/create-user",
   [
@@ -63,7 +58,6 @@ router.post(
   }
 );
 
-// Admin deletes user
 router.delete("/delete/:id", auth(true), requireRole("admin"), async (req, res) => {
   try {
     const { id } = req.params;

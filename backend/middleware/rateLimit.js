@@ -1,6 +1,5 @@
-// backend/middleware/rateLimit.js
-const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQS = 120;        // per IP per minute
+const WINDOW_MS = 60 * 1000;
+const MAX_REQS = 120;
 
 const bucket = new Map();
 

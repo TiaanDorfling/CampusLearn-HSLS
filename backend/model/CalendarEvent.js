@@ -1,9 +1,7 @@
-// backend/model/CalendarEvent.js
 import mongoose from "mongoose";
 
 const { Schema, model, Types } = mongoose;
 
-/** Attendee subdoc (with RSVP + notify timestamp) */
 const attendeeSchema = new Schema(
   {
     user: { type: Types.ObjectId, ref: "User", required: true },

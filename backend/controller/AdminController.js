@@ -1,9 +1,7 @@
-// controller/AdminController.js
 import User from "../model/UserModel.js";
 import { ForumThread } from "../model/Forum.js";
 import Topic from "../model/Topic.js";
 
-/** Fetch all users (admin panel) */
 export async function getAllUsers(req, res) {
   try {
     const users = await User.find({}, "-passwordHash").lean();
@@ -14,7 +12,6 @@ export async function getAllUsers(req, res) {
   }
 }
 
-/** Update user role */
 export async function updateUserRole(req, res) {
   try {
     const { id } = req.params;
@@ -28,7 +25,6 @@ export async function updateUserRole(req, res) {
   }
 }
 
-/** Delete user */
 export async function deleteUser(req, res) {
   try {
     const { id } = req.params;
@@ -41,7 +37,6 @@ export async function deleteUser(req, res) {
   }
 }
 
-/** Get all forum threads (admin moderation view) */
 export async function getAllForumPosts(_req, res) {
   try {
     const posts = await ForumThread.find().sort({ createdAt: -1 }).lean();
@@ -52,7 +47,6 @@ export async function getAllForumPosts(_req, res) {
   }
 }
 
-/** Delete a forum thread */
 export async function deleteForumPost(req, res) {
   try {
     const { id } = req.params;
@@ -65,7 +59,6 @@ export async function deleteForumPost(req, res) {
   }
 }
 
-/** System health check */
 export async function getHealth(_req, res) {
   return res.json({
     ok: true,

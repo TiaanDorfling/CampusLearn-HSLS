@@ -1,4 +1,3 @@
-// backend/routes/forum.js
 import express from "express";
 import jwt from "jsonwebtoken";
 import { ForumCategory, ForumThread, ForumPost } from "../model/Forum.js";
@@ -19,7 +18,7 @@ function requireAuth(req, res, next) {
   }
 }
 
-// Default categories (idempotent seeding)
+// Default categories 
 const DEFAULT_FORUM_CATEGORIES = [
   { name: "Need a Helping Hand", description: "Ask for help, share resources, get unstuck." },
   { name: "Classes",             description: "Class discussions, notes, labs, and tips." },
@@ -28,10 +27,7 @@ const DEFAULT_FORUM_CATEGORIES = [
   { name: "General",             description: "Anything that doesn’t fit elsewhere." },
 ];
 
-//
-// ─── FORUM CATEGORIES ───────────────────────────────────────────────────────────
-//
-
+// FORUM CATEGORIES 
 // POST /categories — create category
 router.post("/categories", requireAuth, async (req, res) => {
   try {
@@ -55,7 +51,7 @@ router.get("/categories", async (_req, res) => {
   }
 });
 
-// POST /categories/seed-defaults — create missing defaults (idempotent)
+// POST /categories/seed-defaults — create missing defaults
 router.post("/categories/seed-defaults", requireAuth, async (_req, res) => {
   try {
     let created = 0;
@@ -74,11 +70,8 @@ router.post("/categories/seed-defaults", requireAuth, async (_req, res) => {
   }
 });
 
-//
-// ─── THREADS ────────────────────────────────────────────────────────────────────
-//
-
-// POST /threads — create thread (and optional opening post via `body`)
+//  THREADS
+// POST /threads — create thread 
 router.post("/threads", requireAuth, async (req, res) => {
   try {
     const { categoryId, title, body } = req.body;
@@ -106,7 +99,7 @@ router.post("/threads", requireAuth, async (req, res) => {
   }
 });
 
-// GET /threads — list threads (optional ?category=)
+// GET /threads — list threads 
 router.get("/threads", async (req, res) => {
   try {
     const filter = {};
@@ -143,10 +136,7 @@ router.get("/threads/:id/posts", async (req, res) => {
   }
 });
 
-//
-// ─── POSTS ──────────────────────────────────────────────────────────────────────
-//
-
+// POSTS
 // POST /posts — create post/reply
 router.post("/posts", requireAuth, async (req, res) => {
   try {
@@ -166,7 +156,7 @@ router.post("/posts", requireAuth, async (req, res) => {
   }
 });
 
-// GET /posts?thread=:id — list posts for a thread (back-compat)
+// GET /posts?thread=:id — list posts for a thread
 router.get("/posts", async (req, res) => {
   try {
     if (!req.query.thread)
@@ -180,10 +170,8 @@ router.get("/posts", async (req, res) => {
   }
 });
 
-//
-// ─── READ TRACKING (OPTIONAL UX) ────────────────────────────────────────────────
-//
 
+// READ TRACKING (OPTIONAL UX)
 // POST /posts/:id/read — mark a single post read
 router.post("/posts/:id/read", requireAuth, async (req, res) => {
   try {

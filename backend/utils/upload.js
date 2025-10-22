@@ -1,4 +1,3 @@
-// backend/utils/upload.js
 import multer from "multer";
 import fs from "fs";
 import path from "path";
@@ -7,25 +6,20 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Absolute path to "<repo>/backend/uploads/topic-resources"
 const UPLOAD_DIR = path.resolve(__dirname, "..", "uploads", "topic-resources");
 
-// Ensure folder exists at startup
 function ensureDir(p) {
   try {
     fs.mkdirSync(p, { recursive: true });
   } catch (e) {
-    // no-op
   }
 }
 ensureDir(UPLOAD_DIR);
 
-// Basic, safe filename sanitizer
 function sanitizeName(name) {
   return String(name).replace(/[^a-zA-Z0-9._-]+/g, "_");
 }
 
-// Optional: limit file types (tweak as needed)
 const allowed = new Set([
   "application/pdf",
   "image/png",
@@ -40,7 +34,6 @@ const storage = multer.diskStorage({
     cb(null, UPLOAD_DIR);
   },
   filename(req, file, cb) {
-    // Your route is "/api/topics/:id/resource", so param is "id" (not topicId)
     const topicId = req.params.id || "topic";
     const ts = Date.now();
     const base = sanitizeName(file.originalname || "upload.bin");

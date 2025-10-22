@@ -1,14 +1,7 @@
-// controller/AIController.js
-/**
- * This controller simulates AI chatbot responses for local testing.
- * Later, Gemini integration can replace `chatWithAI`.
- */
-
 export async function chatWithAI(req, res) {
   try {
     const { prompt, context } = req.body;
 
-    // Simulated local response
     const response = simulateAIResponse(prompt);
 
     return res.json({
@@ -24,7 +17,6 @@ export async function chatWithAI(req, res) {
   }
 }
 
-/** Simulated AI logic (local only) */
 function simulateAIResponse(prompt) {
   const lower = (prompt || "").toLowerCase();
 
@@ -39,6 +31,5 @@ function simulateAIResponse(prompt) {
   if (lower.includes("react"))
     return "React is a front-end JavaScript library for building user interfaces.";
 
-  // Default fallback
   return "That's a great question! Let’s think about it — can you clarify what specifically you’d like to understand?";
 }

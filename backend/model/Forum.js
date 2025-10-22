@@ -1,9 +1,7 @@
-// backend/model/Forum.js
 import mongoose from "mongoose";
 
 const { Schema, model, Types } = mongoose;
 
-// Forum categories (like "General", "SEN381 Help", etc.)
 const forumCategorySchema = new Schema(
   {
     name: { type: String, required: true },
@@ -12,7 +10,6 @@ const forumCategorySchema = new Schema(
   { timestamps: true }
 );
 
-// A thread belongs to a category and has an author
 const forumThreadSchema = new Schema(
   {
     category: { type: Types.ObjectId, ref: "ForumCategory" },
@@ -23,7 +20,6 @@ const forumThreadSchema = new Schema(
   { timestamps: true }
 );
 
-// Individual posts inside threads
 const forumPostSchema = new Schema(
   {
     thread: { type: Types.ObjectId, ref: "ForumThread", required: true },

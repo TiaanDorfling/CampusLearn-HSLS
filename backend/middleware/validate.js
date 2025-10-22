@@ -1,4 +1,3 @@
-// backend/middleware/validate.js
 import { validationResult } from 'express-validator';
 
 export function validate(req, res, next) {

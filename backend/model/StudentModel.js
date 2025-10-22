@@ -1,11 +1,5 @@
-// backend/model/StudentModel.js
 import mongoose from "mongoose";
 
-/**
- * Student profile stored in its own collection, linked to a base User.
- * This does NOT use discriminators. It’s a simple 1:1 profile with a ref to User.
- * That makes populate('user') valid and fixes the StrictPopulateError you saw.
- */
 const StudentSchema = new mongoose.Schema(
   {
     user: {
@@ -13,10 +7,9 @@ const StudentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
       index: true,
-      unique: true, // one student profile per user
+      unique: true,
     },
 
-    // Optional profile fields used in your StudentDashboard + future needs
     studentNumber: { type: String },
     year: { type: String },
     phone: { type: String },

@@ -6,14 +6,11 @@ import cors from "cors";
 import fs from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
 
-// Loaders 
 import { loadEnv } from "./config/loadEnv.js";
 import { connectDB } from "./config/db.js";
 
-// Load env first
 loadEnv();
 
-// Register Mongoose models BEFORE routes 
 import "./model/UserModel.js";
 import "./model/AdminModel.js";
 import "./model/TutorModel.js";
@@ -29,27 +26,22 @@ import "./model/Topic.js";
 import "./model/Submission.js";
 import "./model/CalendarEvent.js";
 
-// Connect to MongoDB
 await connectDB(process.env.MONGO_URI);
 
-// Express app 
 const app = express();
 app.set("trust proxy", true);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// --- Ensure upload dirs exist (no-ops if present) ---
 try {
   fs.mkdirSync(path.join(__dirname, "..", "uploads", "topic-resources"), { recursive: true });
 } catch (e) {
   console.warn("Could not ensure uploads folder:", e?.message);
 }
 
-// MIDDLEWARE
 if (process.env.NODE_ENV !== "production") app.use(morgan("dev"));
 
-// CORS
 const allow =
   (process.env.CLIENT_ORIGIN || "http://localhost:5173")
     .split(",")
@@ -73,7 +65,6 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 
-// Optional request tracing
 if (process.env.REQUEST_TRACE === "1") {
   app.use((req, _res, next) => {
     console.log("→", req.method, req.originalUrl);
@@ -81,7 +72,6 @@ if (process.env.REQUEST_TRACE === "1") {
   });
 }
 
-// Rate limiting (simple, safe)
 try {
   const rateLimit = (await import("./middleware/rateLimit.js")).default;
   app.use(rateLimit);
@@ -89,7 +79,6 @@ try {
   console.warn("[warn] rateLimit middleware missing, continuing without it");
 }
 
-// STATIC + HEALTH
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
@@ -107,7 +96,6 @@ app.get("/healthz", (_req, res) => {
   }
 });
 
-// ROUTES
 async function loadRoute(name) {
   const variations = [
     `./routes/${name}.routes.js`,
@@ -124,7 +112,7 @@ async function loadRoute(name) {
       return routeModule.default || routeModule;
     }
   }
-  console.warn(`[routes] ⚠️ No route file found for "${name}" (${variations.join(", ")})`);
+  console.warn(`[routes] No route file found for "${name}" (${variations.join(", ")})`);
   return Router();
 }
 
@@ -154,11 +142,10 @@ for (const [name, base] of Object.entries(routeMap)) {
     const routes = await loadRoute(name);
     if (routes) app.use(base, routes);
   } catch (err) {
-    console.error(`[routes] ❌ Failed to load "${name}" route:`, err.message);
+    console.error(`[routes] Failed to load "${name}" route:`, err.message);
   }
 }
 
-// ERROR HANDLING
 import { notFound, errorHandler } from "./middleware/error.js";
 app.use(notFound);
 app.use(errorHandler);

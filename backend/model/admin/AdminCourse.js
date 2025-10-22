@@ -1,4 +1,3 @@
-// backend/models/admin/AdminCourse.js
 import mongoose from "mongoose";
 
 const AdminCourseSchema = new mongoose.Schema(
@@ -13,6 +12,5 @@ const AdminCourseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Different model name; same physical collection: "courses"
 export default mongoose.models.AdminCourse
   || mongoose.model("AdminCourse", AdminCourseSchema, "courses");

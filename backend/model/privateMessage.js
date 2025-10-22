@@ -1,4 +1,3 @@
-// backend/model/privateMessage.js
 import mongoose from "mongoose";
 
 const ConversationSchema = new mongoose.Schema(
@@ -10,7 +9,7 @@ const ConversationSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true, collection: "conversations" } // optional but explicit
+  { timestamps: true, collection: "conversations" }
 );
 
 const MessageSchema = new mongoose.Schema(
@@ -24,10 +23,9 @@ const MessageSchema = new mongoose.Schema(
     text: { type: String, required: true },
     isReadBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
-  { timestamps: true, collection: "privatemessages" } // ✅ match your Compass collection
+  { timestamps: true, collection: "privatemessages" }
 );
 
-// helpful index for queries we use
 ConversationSchema.index({ "participants.user": 1, updatedAt: -1 });
 MessageSchema.index({ conversation: 1, createdAt: -1 });
 

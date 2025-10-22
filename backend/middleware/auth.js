@@ -1,4 +1,3 @@
-// backend/middleware/auth.js
 import { verifyToken } from '../utils/jwt.js';
 
 export function auth(required = true) {
@@ -11,7 +10,6 @@ export function auth(required = true) {
 
     const payload = verifyToken(token);
     if (!payload) {
-      // Expired or invalid → clear cookie
       res.clearCookie('jwt', {
         httpOnly: true,
         sameSite: 'strict',
@@ -41,7 +39,6 @@ export function verifyUserAccess(req, res, next) {
   if (!user)
     return res.status(401).json({ error: 'Unauthorized – login required' });
 
-  // Allow if admin or same user
   if (user.role === 'admin' || user.id === targetUserId) {
     return next();
   }

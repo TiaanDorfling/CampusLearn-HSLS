@@ -1,4 +1,3 @@
-//backend/model/Student.js
 import mongoose from "mongoose";
 
 const { Schema } = mongoose;

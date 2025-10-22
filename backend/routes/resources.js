@@ -1,4 +1,3 @@
-// backend/routes/resources.js
 import express from "express";
 import mongoose from "mongoose";
 import { auth, requireRole } from "../middleware/auth.js";
@@ -6,7 +5,6 @@ import Topic from "../model/Topic.js";
 
 const router = express.Router();
 
-// GET /api/resources?topic=<topicId>&page=&limit=
 router.get("/", auth(true), async (req, res) => {
   try {
     const { topic, page = 1, limit = 20 } = req.query;
@@ -28,7 +26,6 @@ router.get("/", auth(true), async (req, res) => {
       .limit(l)
       .lean();
 
-    // Flatten resources with topic context for convenience
     const items = [];
     for (const t of topics) {
       for (const r of t.resources || []) {
@@ -50,7 +47,6 @@ router.get("/", auth(true), async (req, res) => {
   }
 });
 
-// GET /api/resources/mine
 router.get("/mine", auth(true), async (req, res) => {
   try {
     const uid = req.user._id;
@@ -81,7 +77,6 @@ router.get("/mine", auth(true), async (req, res) => {
   }
 });
 
-// DELETE /api/resources/:id?topic=<topicId>
 router.delete("/:id", auth(true), async (req, res) => {
   try {
     const { id } = req.params;
@@ -104,7 +99,7 @@ router.delete("/:id", auth(true), async (req, res) => {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    resource.deleteOne(); // remove subdoc
+    resource.deleteOne();
     await doc.save();
 
     return res.json({ ok: true });

@@ -1,8 +1,6 @@
-// backend/routes/admin.routes.js
 import express from "express";
 import mongoose from "mongoose";
 
-// Admin-safe models (different names; same collections)
 import AdminUser    from "../model/admin/AdminUser.js";
 import AdminStudent from "../model/admin/AdminStudent.js";
 import AdminTutor   from "../model/admin/AdminTutor.js";
@@ -232,12 +230,6 @@ router.delete("/courses/:id", aw(async (req, res) => {
 }));
 
 /* ---------------- ENROLLMENT (NEW) ---------------- */
-
-/**
- * POST /api/admin/courses/:courseId/enroll
- * Body: { studentId }
- * Adds both sides (course.students[], student.courses[]) idempotently.
- */
 router.post("/courses/:courseId/enroll", aw(async (req, res) => {
   const { courseId } = req.params;
   const { studentId } = req.body;
@@ -263,11 +255,6 @@ router.post("/courses/:courseId/enroll", aw(async (req, res) => {
   res.json({ ok: true, course: updated });
 }));
 
-/**
- * Fallback variant used by client trySeq:
- * POST /api/admin/students/:studentId/enroll
- * Body: { courseId }
- */
 router.post("/students/:studentId/enroll", aw(async (req, res) => {
   const { studentId } = req.params;
   const { courseId } = req.body;
@@ -293,10 +280,6 @@ router.post("/students/:studentId/enroll", aw(async (req, res) => {
   res.json({ ok: true, course: updated });
 }));
 
-/**
- * DELETE /api/admin/courses/:courseId/students/:studentId
- * Removes the relation on both sides.
- */
 router.delete("/courses/:courseId/students/:studentId", aw(async (req, res) => {
   const { courseId, studentId } = req.params;
 
