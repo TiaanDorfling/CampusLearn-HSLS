@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import usersRouter   from "../routes/users.js";
 import pmRouter      from "../routes/pm.js";
 import aiRouter      from "../routes/ai.js";
-import studentRouter from "../routes/studentRoutes.js";  // correct import
-import adminRouter   from "../routes/adminapi.js";       // NEW: admin routes (students/tutors/courses)
+import studentRouter from "../routes/studentRoutes.js";  
+import adminRouter   from "../routes/adminapi.js";       
 
 const app = express();
 
@@ -44,8 +44,6 @@ app.use("/api/pm",      pmRouter);
 app.use("/api",         aiRouter);
 app.use("/api/students", studentRouter);
 
-// NEW: mount the admin API (non-conflicting models, unified endpoints)
-// -> /api/admin/students, /api/admin/tutors, /api/admin/courses
 app.use("/api/admin",   adminRouter);
 
 app.use((req, res) => {

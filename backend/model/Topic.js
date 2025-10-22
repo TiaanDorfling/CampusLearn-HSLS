@@ -1,4 +1,3 @@
-// backend/model/Topic.js
 import mongoose from "mongoose";
 
 const resourceSchema = new mongoose.Schema({
@@ -28,7 +27,6 @@ const topicSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔎 full‐text search
 topicSchema.index({ title: "text", body: "text", tags: "text" });
 
 topicSchema.methods.addSubscriber = async function (userId) {

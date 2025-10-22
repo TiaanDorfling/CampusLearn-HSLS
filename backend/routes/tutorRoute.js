@@ -1,4 +1,3 @@
-// backend/routes/tutorRoute.js
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import Tutor from "../model/TutorModel.js";
@@ -7,10 +6,6 @@ import Student from "../model/StudentModel.js";
 
 const router = express.Router();
 
-/**
- * GET /api/tutor/me
- * Returns the tutor profile of the currently authenticated user.
- */
 router.get("/me", auth(true), async (req, res) => {
   try {
     const uid = req.user._id || req.user.id;
@@ -26,10 +21,6 @@ router.get("/me", auth(true), async (req, res) => {
   }
 });
 
-/**
- * PUT /api/tutor/me
- * Creates or updates the current user's tutor profile.
- */
 router.put("/me", auth(true), async (req, res) => {
   try {
     const uid = req.user._id || req.user.id;
@@ -62,10 +53,6 @@ router.put("/me", auth(true), async (req, res) => {
   }
 });
 
-/**
- * GET /api/tutor/:tutorId/students
- * Lists students assigned to this tutor (if any).
- */
 router.get("/:tutorId/students", auth(true), async (req, res) => {
   try {
     const { tutorId } = req.params;

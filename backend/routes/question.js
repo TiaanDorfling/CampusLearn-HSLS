@@ -1,4 +1,3 @@
-// backend/routes/question.js
 import express from "express";
 import { body, param } from "express-validator";
 import { validate } from "../middleware/validate.js";
@@ -10,7 +9,6 @@ const { Schema } = mongoosePkg;
 
 const router = express.Router();
 
-// Inline Notification model
 const Notification =
   mongoose.models.Notification ||
   mongoose.model(
@@ -28,9 +26,6 @@ const Notification =
     )
   );
 
-/**
- * POST /api/questions
- */
 router.post(
   "/",
   auth(true),
@@ -60,9 +55,6 @@ router.post(
   }
 );
 
-/**
- * GET /api/questions
- */
 router.get("/", auth(false), async (_req, res) => {
   try {
     const questions = await Question.find()
@@ -78,9 +70,6 @@ router.get("/", auth(false), async (_req, res) => {
   }
 });
 
-/**
- * POST /api/questions/:questionId/response  (tutor only)
- */
 router.post(
   "/:questionId/response",
   auth(true),
@@ -105,7 +94,6 @@ router.post(
       await question.addResponse(responseData);
       const lastResponse = question.responses[question.responses.length - 1];
 
-      // Notify the student who asked (unless the tutor is somehow the same user)
       if (String(question.student) !== String(tutorId)) {
         await Notification.create({
           userId: question.student,
@@ -124,9 +112,6 @@ router.post(
   }
 );
 
-/**
- * GET /api/questions/:questionId/responses
- */
 router.get("/:questionId/responses", auth(true), [param("questionId").isMongoId()], validate, async (req, res) => {
   const { questionId } = req.params;
   try {

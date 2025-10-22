@@ -1,9 +1,8 @@
 import Student from "../models/Student.js";
 
-// GET /students/me
 export const getMyStudent = async (req, res) => {
   try {
-    const userId = req.user.id;      // assuming you have auth middleware setting req.user
+    const userId = req.user.id;
     const student = await Student.findOne({ user: userId });
     if (!student) return res.status(404).json({ message: "Student profile not found" });
     return res.json({ student });
@@ -13,7 +12,6 @@ export const getMyStudent = async (req, res) => {
   }
 };
 
-// PATCH /students/me
 export const updateMyStudent = async (req, res) => {
   try {
     const userId = req.user.id;

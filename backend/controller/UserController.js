@@ -1,16 +1,14 @@
 import UserModel from '../model/UserModel.js';
 import bcrypt from 'bcryptjs';
 
-// Update profile (self-service)
 export const updateProfile = async (req, res) => {
   try {
-    const userId = req.user._id; // From auth middleware
+    const userId = req.user._id;
     const { name, email, password } = req.body;
 
     const user = await UserModel.findById(userId);
     if (!user) return res.status(404).json({ message: `User not found` });
 
-    // Optional updates
     if (name) user.name = name.trim();
     if (email) user.email = email.toLowerCase().trim();
     if (password) user.passwordHash = await bcrypt.hash(password, 10);
@@ -34,13 +32,12 @@ export const updateProfile = async (req, res) => {
 
 export const adminUpdateUser = async (req, res) => {
   try {
-    const { id } = req.params; // user ID to update
+    const { id } = req.params;
     const { name, email, password, role } = req.body;
 
     const user = await UserModel.findById(id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Update fields if provided
     if (name) user.name = name.trim();
     if (email) user.email = email.toLowerCase().trim();
     if (password) {

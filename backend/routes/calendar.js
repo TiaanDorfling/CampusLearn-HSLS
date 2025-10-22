@@ -1,10 +1,9 @@
-// backend/routes/calendar.js
 import express from "express";
 import { body, query, param } from "express-validator";
 import { auth, requireRole } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 import CalendarEvent from "../model/CalendarEvent.js";
-import Notification from "../model/Notification.js"; // your working Notification model
+import Notification from "../model/Notification.js";
 
 const router = express.Router();
 
@@ -25,17 +24,12 @@ async function notifyUsers(users, payloadBuilder) {
     try {
       await Notification.insertMany(docs, { ordered: false });
     } catch (e) {
-      // swallow duplicate/validation errors; logging only
       console.warn("[calendar] notify error:", e.message);
     }
   }
 }
 
 /* ------------------------------ List events ------------------------------ */
-/**
- * GET /api/calendar?from=&to=
- * Returns events the current user owns OR is an attendee of.
- */
 router.get(
   "/",
   auth(true),
@@ -81,10 +75,6 @@ router.get(
 );
 
 /* ------------------------------ Create event ----------------------------- */
-/**
- * POST /api/calendar
- * Tutor/Admin create events (students read-only by default).
- */
 router.post(
   "/",
   auth(true),
@@ -96,7 +86,7 @@ router.post(
     body("location").optional().isString(),
     body("notes").optional().isString(),
     body("attendees").optional().isArray(),
-    body("attendees.*").optional().isString().isLength({ min: 1 }), // array of userIds as strings
+    body("attendees.*").optional().isString().isLength({ min: 1 }), 
   ],
   validate,
   async (req, res) => {
@@ -125,7 +115,7 @@ router.post(
         })),
       });
 
-      // Notify attendees (exclude owner)
+      // Notify attendees
       const recipients = attendees
         .map((id) => id)
         .filter((id) => String(id) !== String(me));
@@ -158,10 +148,6 @@ router.post(
 );
 
 /* ------------------------------ Update event ----------------------------- */
-/**
- * PATCH /api/calendar/:id
- * Only owner or admin may update.
- */
 router.patch(
   "/:id",
   auth(true),
@@ -245,10 +231,6 @@ router.patch(
 );
 
 /* ------------------------------ Delete event ----------------------------- */
-/**
- * DELETE /api/calendar/:id
- * Only owner or admin may delete. Attendees get a cancellation notification.
- */
 router.delete(
   "/:id",
   auth(true),

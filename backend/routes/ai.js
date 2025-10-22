@@ -1,4 +1,3 @@
-// backend/routes/ai.js
 import { Router } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -13,11 +12,6 @@ const MODEL = "gemini-1.5-flash";
 const SYSTEM = `You are CampusLearn's helpful tutor assistant.
 Be direct, practical, concise. If unsure, say so briefly.`;
 
-/**
- * POST /api/ai/chat
- * body: { messages: [{ role: "user"|"assistant", content: string }] }
- * returns: { text: string }
- */
 router.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body || {};

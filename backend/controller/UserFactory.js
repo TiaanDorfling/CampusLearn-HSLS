@@ -22,7 +22,6 @@ export class UserFactory{
     }
 
     static async findByEmail(email) {
-    // Check across all possible models
     const admin = await AdminModel.findOne({ email });
     if (admin) return { ...admin.toObject(), role: 'admin', model: 'AdminModel' };
 
@@ -32,7 +31,6 @@ export class UserFactory{
     const student = await StudentModel.findOne({ email });
     if (student) return { ...student.toObject(), role: 'student', model: 'StudentModel' };
 
-    // None found
     return null;
   }
 }

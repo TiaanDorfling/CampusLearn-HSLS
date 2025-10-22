@@ -1,4 +1,3 @@
-// routes/admin.js
 import express from "express";
 import * as admin from "../controller/AdminController.js";
 

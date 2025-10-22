@@ -1,4 +1,3 @@
-// backend/routes/auth.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import { body } from "express-validator";
@@ -8,20 +7,12 @@ import { generateToken, verifyToken } from "../utils/jwt.js";
 
 const router = express.Router();
 
-/** 
- * NOTE (current constraint):
- * UserModel enforces student domain via schema `match`.
- * Keep API validation aligned to avoid 500s from schema validation.
- * If/when you relax the schema to allow tutor/admin domains, just update
- * `validateEmailForRole` accordingly.
- */
 function validateEmailForRole(email, role = "student") {
-  // Current behavior: all roles must use student emails
   const reStudent = /^[a-z0-9._%+-]+@student\.belgiumcampus\.ac\.za$/i;
   return reStudent.test(String(email || ""));
 }
 
-// ── REGISTER ──────────────────────────────────────────────────────────────────
+// REGISTER
 router.post(
   "/register",
   [
@@ -56,7 +47,7 @@ router.post(
   }
 );
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────────
+// LOGIN 
 router.post(
   "/login",
   [body("email").isEmail(), body("password").isString().isLength({ min: 8 })],
@@ -76,7 +67,7 @@ router.post(
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 1000, // 1h
+        maxAge: 60 * 60 * 1000,
       });
 
       res.status(200).json({
@@ -90,7 +81,7 @@ router.post(
   }
 );
 
-// ── LOGOUT ────────────────────────────────────────────────────────────────────
+// LOGOUT
 router.post("/logout", (_req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
@@ -100,7 +91,7 @@ router.post("/logout", (_req, res) => {
   res.status(200).json({ message: "Logout successful" });
 });
 
-// ── SESSION CHECK ─────────────────────────────────────────────────────────────
+// SESSION CHECK
 router.get("/session", (req, res) => {
   const token = req.cookies?.jwt;
   if (!token) return res.status(401).json({ active: false });

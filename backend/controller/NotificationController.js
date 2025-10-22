@@ -1,7 +1,5 @@
-// controller/NotificationController.js
 import Notification from "../model/Notification.js";
 
-/** List all notifications for logged-in user */
 export async function getAll(req, res) {
   try {
     const userId = req.user?._id || req.user?.id;
@@ -18,7 +16,6 @@ export async function getAll(req, res) {
   }
 }
 
-/** Mark specific notification as read */
 export async function markRead(req, res) {
   try {
     const userId = req.user?._id || req.user?.id;
@@ -36,7 +33,6 @@ export async function markRead(req, res) {
   }
 }
 
-/** Mark all as read */
 export async function markAllRead(req, res) {
   try {
     const userId = req.user?._id || req.user?.id;
@@ -51,7 +47,6 @@ export async function markAllRead(req, res) {
   }
 }
 
-/** Delete notification */
 export async function deleteNotification(req, res) {
   try {
     const userId = req.user?._id || req.user?.id;

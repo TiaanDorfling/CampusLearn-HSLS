@@ -1,4 +1,3 @@
-// controller/HealthController.js
 export async function healthz(req, res) {
   try {
     return res.json({

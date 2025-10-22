@@ -1,4 +1,3 @@
-// backend/routes/messages.js
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import { Conversation, Message } from "../model/privateMessage.js";
@@ -6,10 +5,6 @@ import Notification from "../model/Notification.js";
 
 const router = express.Router();
 
-/**
- * POST /api/messages/conversations
- * Create a new conversation between participants
- */
 router.post("/conversations", auth(true), async (req, res) => {
   try {
     const { participants } = req.body;
@@ -17,7 +12,6 @@ router.post("/conversations", auth(true), async (req, res) => {
     if (!participants || participants.length < 2)
       return res.status(400).json({ error: "At least two participants required" });
 
-    // naive uniqueness: same participants (order-agnostic) and same size
     const existing = await Conversation.findOne({
       "participants.user": { $all: participants.map((p) => p.user) },
       $expr: { $eq: [{ $size: "$participants" }, participants.length] },
@@ -33,9 +27,6 @@ router.post("/conversations", auth(true), async (req, res) => {
   }
 });
 
-/**
- * GET /api/messages/conversations
- */
 router.get("/conversations", auth(true), async (req, res) => {
   try {
     const userId = req.user._id;
@@ -54,10 +45,6 @@ router.get("/conversations", auth(true), async (req, res) => {
   }
 });
 
-/**
- * POST /api/messages/:conversationId
- * Send a message in a conversation
- */
 router.post("/:conversationId", auth(true), async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -69,7 +56,7 @@ router.post("/:conversationId", auth(true), async (req, res) => {
     const convo = await Conversation.findById(conversationId);
     if (!convo) return res.status(404).json({ error: "Conversation not found" });
 
-    // Create message (sender is read by default)
+    // Create message
     const msg = await Message.create({
       conversation: convo._id,
       sender: { user: user._id, role: user.role },
@@ -108,9 +95,6 @@ router.post("/:conversationId", auth(true), async (req, res) => {
   }
 });
 
-/**
- * GET /api/messages/:conversationId
- */
 router.get("/:conversationId", auth(true), async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -126,11 +110,6 @@ router.get("/:conversationId", auth(true), async (req, res) => {
   }
 });
 
-/**
- * PUT /api/messages/read
- * Mark a single message as read
- * body: { messageId }
- */
 router.put("/read", auth(true), async (req, res) => {
   try {
     const { messageId } = req.body;
@@ -144,7 +123,6 @@ router.put("/read", auth(true), async (req, res) => {
       await message.save();
     }
 
-    // also flip any message notifications for this message/user
     await Notification.updateMany(
       { user: userId, type: "message", "data.messageId": String(messageId) },
       { $set: { read: true } }
@@ -157,11 +135,6 @@ router.put("/read", auth(true), async (req, res) => {
   }
 });
 
-/**
- * PUT /api/messages/read-many
- * Mark multiple messages as read (bulk)
- * body: { messageIds: string[] }
- */
 router.put("/read-many", auth(true), async (req, res) => {
   try {
     const { messageIds } = req.body || {};
@@ -178,13 +151,11 @@ router.put("/read-many", auth(true), async (req, res) => {
       { $addToSet: { isReadBy: userId } }
     );
 
-    // also flip related message notifications for this user
     await Notification.updateMany(
       { user: userId, type: "message", "data.messageId": { $in: ids } },
       { $set: { read: true } }
     );
 
-    // optional: return the updated docs (handy for the UI to reconcile)
     const updated = await Message.find({ _id: { $in: ids } }).lean();
 
     return res.status(200).json({ ok: true, modifiedCount: result.modifiedCount, items: updated });
@@ -194,22 +165,16 @@ router.put("/read-many", auth(true), async (req, res) => {
   }
 });
 
-/**
- * PUT /api/messages/:conversationId/read-all
- * Mark ALL messages in a conversation as read for the current user
- */
 router.put("/:conversationId/read-all", auth(true), async (req, res) => {
   try {
     const { conversationId } = req.params;
     const userId = req.user._id;
 
-    // mark all messages in the conversation as read for this user
     const result = await Message.updateMany(
       { conversation: conversationId, isReadBy: { $ne: userId } },
       { $addToSet: { isReadBy: userId } }
     );
 
-    // mark any message notifications in this conversation as read for this user
     const ids = await Message.find({ conversation: conversationId }, { _id: 1 }).lean();
     const msgIds = ids.map((m) => String(m._id));
     if (msgIds.length) {

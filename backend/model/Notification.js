@@ -1,4 +1,3 @@
-// backend/model/Notification.js
 import mongoose from "mongoose";
 
 const { Schema, model, models } = mongoose;
@@ -9,7 +8,7 @@ const NotificationSchema = new Schema(
     type: { type: String, enum: ["message", "forum", "system"], default: "system", index: true },
     title: { type: String, default: "" },
     text:  { type: String, default: "" },
-    data:  { type: Schema.Types.Mixed, default: {} }, // anything useful (messageId, convoId, etc.)
+    data:  { type: Schema.Types.Mixed, default: {} },
     read:  { type: Boolean, default: false, index: true },
   },
   { timestamps: true, collection: "notifications" }

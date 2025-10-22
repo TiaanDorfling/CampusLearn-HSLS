@@ -1,21 +1,8 @@
-// backend/routes/notifications.js
 import express from "express";
 import mongoose from "mongoose";
 import { auth } from "../middleware/auth.js";
 
 const router = express.Router();
-
-/**
- * Lightweight Mongoose model (co-located to avoid compile conflicts)
- * Fields:
- *  - userId: recipient user
- *  - type:   e.g., "pm" | "topic" | "system"
- *  - title:  short title
- *  - body:   descriptive text
- *  - link:   optional deep link (e.g., /app/messages?c=123)
- *  - read:   boolean
- *  - meta:   arbitrary payload (ids, etc.)
- */
 const Notification =
   mongoose.models.Notification ||
   mongoose.model(
@@ -34,7 +21,7 @@ const Notification =
     )
   );
 
-// ── LIST MY NOTIFICATIONS ─────────────────────────────────────────────────────
+// LIST MY NOTIFICATIONS
 router.get("/", auth(true), async (req, res) => {
   try {
     const userId = req.user._id;
@@ -46,7 +33,6 @@ router.get("/", auth(true), async (req, res) => {
   }
 });
 
-// ── BADGE COUNT (UNREAD) ──────────────────────────────────────────────────────
 router.get("/badge", auth(true), async (req, res) => {
   try {
     const userId = req.user._id;
@@ -58,7 +44,6 @@ router.get("/badge", auth(true), async (req, res) => {
   }
 });
 
-// ── MARK ONE AS READ ──────────────────────────────────────────────────────────
 router.patch("/:id/read", auth(true), async (req, res) => {
   try {
     const { id } = req.params;
@@ -78,7 +63,6 @@ router.patch("/:id/read", auth(true), async (req, res) => {
   }
 });
 
-// ── MARK ALL AS READ ──────────────────────────────────────────────────────────
 router.patch("/read-all", auth(true), async (req, res) => {
   try {
     const userId = req.user._id;
@@ -90,7 +74,6 @@ router.patch("/read-all", auth(true), async (req, res) => {
   }
 });
 
-// ── DELETE ONE ────────────────────────────────────────────────────────────────
 router.delete("/:id", auth(true), async (req, res) => {
   try {
     const { id } = req.params;
