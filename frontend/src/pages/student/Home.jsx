@@ -10,6 +10,8 @@ import it3 from "../../assets/it3.jpg";
 import it5 from "../../assets/it5.jpg";
 import it6 from "../../assets/it6.jpg";
 
+import { MessageSquare, Bell, AlertCircle, Calendar, BookOpen } from "lucide-react";
+
 /** Qualifications showcase */
 const coursesShowcase = [
   { id: 1, title: "Bachelor of Computing (BComp)", image: it1, badges: ["4 years", "NQF 8", "≈480–506 credits", "Work-integrated learning"], blurb: "A practical, career-focused degree with strong industry input. Choose a specialisation in Data Science or Software Engineering." },
@@ -75,7 +77,7 @@ function fmtDate(d){
 }
 function cmpTime(a,b){const [ah,am]=a.split(":").map(Number);const [bh,bm]=b.split(":").map(Number);return ah!==bh?ah-bh:am-bm;}
 function buildDummyScheduleForCurrentMonth(){
-  const now=new Date(); // October at runtime -> October schedule
+  const now=new Date();
   const y=now.getFullYear(); const m=now.getMonth(); const last=new Date(y,m+1,0).getDate();
   const items=[];
   for(let day=1; day<=last; day++){
@@ -132,58 +134,88 @@ export default function StudentHome(){
     return ()=>{alive=false;};
   },[]);
 
-  // YouTube
-  const ytWatchUrl="https://www.youtube.com/watch?v=QPzmsQ86_HM";
-  const ytEmbedUrl="https://www.youtube.com/embed/QPzmsQ86_HM?rel=0&modestbranding=1";
+  // Derived quick stats
+  const todayCount = countTodayFromEvents(monthEvents);
+  const unreadCount = unread.length;
+  const alertCount = unreadCount > 0 ? Math.min(unreadCount, 9) : 0;
 
   // Group modules
-  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});
-
+  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});  
   // Group events by date (for centered sections)
-  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});
+  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});  
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-6 space-y-12">
-      {/* HERO (full width, centered) */}
-      <section className="rounded-3xl p-8 bg-white border border-primary/10 shadow-sm bg-[linear-gradient(90deg,rgba(185,174,229,0.6),rgba(255,243,224,0.7),white)]">
-        <div className="grid md:grid-cols-2 gap-6 items-center">
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl md:text-4xl font-heading text-primary">Welcome back 👋</h1>
-            <p className="text-primary/70 mt-2">
-              Stay on top of your classes, messages and forum activity.
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 max-w-md mx-auto md:ml-auto">
-            <Stat label="Today" value={`${countTodayFromEvents(monthEvents)} classes`} />
-            {unread.length>0 && <Stat label="Unread" value={`${unread.length} msgs`} onClick={()=>setDrawer(true)}/>}
-            <Stat label="Progress" value="—" />
+    <div className="min-h-screen bg-cream">
+      {/* Header — match Admin styling */}
+      <div className="bg-primary border-b-4 border-primary-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl font-heading font-bold text-cream">Student Home</h1>
+              <p className="text-beige mt-1">Stay on top of your classes, messages and forum activity</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => nav("/app/messages")}
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg">
+                <MessageSquare className="w-4 h-4" />
+                <span className="hidden sm:inline">Messages</span>
+                {unreadCount > 0 && (
+                  <span className="bg-redbrown text-cream text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {alertCount}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => setDrawer(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-800 text-cream rounded-lg hover:bg-primary-900 transition font-button font-medium shadow-lg">
+                <Bell className="w-4 h-4" />
+                <span className="hidden sm:inline">Alerts</span>
+                <span className="bg-redbrown text-cream text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {alertCount}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
-          <QuickAction onClick={()=>nav("/app/student/dashboard")} label="Open Dashboard" />
-          <QuickAction onClick={()=>nav("/app/messages")} label="Messages" />
-          <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
-          <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
-          <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
+      {/* Quick Actions row — match Admin style */}
+      <div className="bg-white border-b-2 border-primary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-wrap gap-2">
+            <QuickAction onClick={()=>nav("/app/student/dashboard")} label="Open Dashboard" />
+            <QuickAction onClick={()=>nav("/app/messages")} label="Messages" />
+            <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
+            <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
+            <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* WIDE CONTENT (centered, fuller) */}
-      <section className="space-y-12">
-        {/* Top row: Video + Quick cards */}
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Error banner (Admin style) */}
+        {/* (Kept if you ever wire in error states) */}
+
+        {/* Stats — same tile style as Admin */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+          <StatCard icon={Calendar} color="bg-primary" label="Today’s Classes" value={todayCount} change="+0" />
+          <StatCard icon={MessageSquare} color="bg-accent" label="Unread Messages" value={unreadCount} change={unreadCount ? `+${unreadCount}` : "—"} />
+          <StatCard icon={BookOpen} color="bg-lavender" label="Next Class" value={nextClass ? `${nextClass.code}` : "—"} change={nextClass ? "Soon" : "—"} />
+        </div>
+
+        {/* Top row: Video + side cards */}
         <div className="grid lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Student life at Belgium Campus</h3>
-              <a className="text-sm underline" href={ytWatchUrl} target="_blank" rel="noreferrer">
+              <h3 className="text-xl font-heading font-bold text-primary">Student life at Belgium Campus</h3>
+              <a className="text-sm font-button text-accent hover:underline" href="https://www.youtube.com/watch?v=QPzmsQ86_HM" target="_blank" rel="noreferrer">
                 View on YouTube
               </a>
             </div>
-            <div className="mt-3 relative w-full pt-[56.25%] rounded-xl overflow-hidden border">
+            <div className="mt-3 relative w-full pt-[56.25%] rounded-xl overflow-hidden border-2 border-primary/10">
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src={ytEmbedUrl}
+                src="https://www.youtube.com/embed/QPzmsQ86_HM?rel=0&modestbranding=1"
                 title="Belgium Campus Student Life (YouTube)"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
@@ -196,13 +228,13 @@ export default function StudentHome(){
             {nextClass && (
               <Card>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Next up</h3>
-                  <span className="text-xs text-primary/60">Local time</span>
+                  <h3 className="text-lg font-heading font-bold text-primary">Next up</h3>
+                  <span className="text-xs font-button text-primary-800/70">Local time</span>
                 </div>
-                <div className="mt-3 rounded-xl border bg-white p-4 text-center">
-                  <div className="text-base font-semibold">{nextClass.subject}</div>
-                  <div className="text-xs text-primary/60">{nextClass.code} • {nextClass.room}</div>
-                  <div className="text-sm mt-1">
+                <div className="mt-3 rounded-xl border-2 border-primary/10 bg-cream/50 p-4 text-center">
+                  <div className="text-base font-heading font-semibold text-primary">{nextClass.subject}</div>
+                  <div className="text-xs text-primary-800/70">{nextClass.code} • {nextClass.room}</div>
+                  <div className="text-sm mt-1 font-sans">
                     {fmtDate(nextClass.date)} — {nextClass.start}–{nextClass.end}
                   </div>
                 </div>
@@ -212,41 +244,51 @@ export default function StudentHome(){
             {unread.length>0 && (
               <Card>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Recent messages</h3>
-                  <button className="text-sm underline" onClick={()=>nav("/app/messages")}>View all</button>
+                  <h3 className="text-lg font-heading font-bold text-primary">Recent messages</h3>
+                  <button className="text-sm font-button text-accent hover:underline" onClick={()=>nav("/app/messages")}>View all</button>
                 </div>
                 <ul className="mt-3 space-y-2 text-sm">
                   {unread.map(m=>(
-                    <li key={m._id} className="rounded-lg border p-3 hover:bg-cream/50 transition">
-                      <div className="font-medium">{m.senderName || m.from || "Message"}</div>
-                      <div className="text-primary/60">{m.subject || m.title || m.body?.slice(0,60)}</div>
+                    <li key={m._id} className="rounded-lg border-2 border-primary/10 p-3 hover:bg-lavender/10 transition">
+                      <div className="font-heading text-primary">{m.senderName || m.from || "Message"}</div>
+                      <div className="text-primary-800/70 font-sans">{m.subject || m.title || m.body?.slice(0,60)}</div>
                     </li>
                   ))}
                 </ul>
               </Card>
             )}
+
+            {!nextClass && unread.length===0 && (
+              <Card>
+                <div className="flex items-center gap-2 text-primary-800">
+                  <AlertCircle className="w-5 h-5" />
+                  <h3 className="text-lg font-heading font-bold">Nothing urgent right now</h3>
+                </div>
+                <p className="text-sm text-primary-800/70 mt-2">You’re all caught up. Check your modules or browse qualifications below.</p>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* DUMMY SCHEDULE — OCTOBER */}
+        {/* October Schedule — Admin card style */}
         <Card>
-          <h3 className="font-semibold text-center">October Class Schedule</h3>
-          <div className="mt-4 rounded-2xl border p-4">
+          <h3 className="text-xl font-heading font-bold text-primary text-center">October Class Schedule</h3>
+          <div className="mt-4 rounded-2xl border-2 border-primary/10 p-4">
             <div className="space-y-6 max-w-5xl mx-auto">
               {Object.keys(eventsByDate).map((key)=>{
                 const evs=eventsByDate[key];
                 const d=evs[0].date;
                 return (
                   <div key={key} className="text-center">
-                    <div className="inline-flex items-center gap-2 bg-cream/60 border border-primary/10 rounded-full px-3 py-1 text-sm font-medium">
-                      {fmtDate(d)}
+                    <div className="inline-flex items-center gap-2 bg-cream/60 border-2 border-primary/10 rounded-full px-3 py-1 text-sm font-button text-primary">
+                      <Calendar className="w-4 h-4" /> {fmtDate(d)}
                     </div>
                     <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 place-items-stretch">
                       {evs.sort((a,b)=>cmpTime(a.start,b.start)).map(e=>(
-                        <div key={e.id} className="rounded-xl border bg-white p-4 shadow-sm">
-                          <div className="text-sm font-semibold">{e.subject}</div>
-                          <div className="text-xs text-primary/60">{e.code} • {e.room}</div>
-                          <div className="mt-1 text-sm">{e.start} – {e.end}</div>
+                        <div key={e.id} className="rounded-xl border-2 border-primary/10 bg-white p-4 shadow-sm">
+                          <div className="text-sm font-heading text-primary">{e.subject}</div>
+                          <div className="text-xs text-primary-800/70 font-sans">{e.code} • {e.room}</div>
+                          <div className="mt-1 text-sm font-sans text-primary">{e.start} – {e.end}</div>
                         </div>
                       ))}
                     </div>
@@ -257,33 +299,33 @@ export default function StudentHome(){
           </div>
         </Card>
 
-        {/* Modules table (no "View" column) */}
+        {/* Modules table — Admin table look */}
         <Card>
-          <h3 className="font-semibold mb-3">Software Engineering — Modules & Streams</h3>
-          <div className="rounded-xl border overflow-hidden">
-            <table className="table-auto w-full text-sm">
-              <thead className="bg-cream/60">
+          <h3 className="text-xl font-heading font-bold text-primary mb-3">Software Engineering — Modules & Streams</h3>
+          <div className="rounded-xl border-2 border-primary/10 overflow-hidden bg-white">
+            <table className="table-auto w-full text-sm font-sans">
+              <thead className="bg-lavender/20">
                 <tr className="text-left">
-                  <th className="px-3 py-2 font-medium">Subject</th>
-                  <th className="px-3 py-2 font-medium">Code</th>
-                  <th className="px-3 py-2 font-medium">NQF</th>
-                  <th className="px-3 py-2 font-medium">Credits</th>
-                  <th className="px-3 py-2 font-medium">Prerequisites</th>
+                  <th className="px-4 py-3 font-heading font-semibold text-primary">Subject</th>
+                  <th className="px-4 py-3 font-heading font-semibold text-primary">Code</th>
+                  <th className="px-4 py-3 font-heading font-semibold text-primary">NQF</th>
+                  <th className="px-4 py-3 font-heading font-semibold text-primary">Credits</th>
+                  <th className="px-4 py-3 font-heading font-semibold text-primary">Prerequisites</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-primary/10">
                 {Object.entries(grouped).map(([cat,rows])=>(
                   <React.Fragment key={cat}>
-                    <tr className="bg-primary/5">
-                      <td className="px-3 py-2 font-semibold" colSpan={5}>{cat}</td>
+                    <tr className="bg-cream/60">
+                      <td className="px-4 py-2 font-heading font-semibold text-primary" colSpan={5}>{cat}</td>
                     </tr>
                     {rows.map(m=>(
-                      <tr key={m.code} className="hover:bg-cream/40 align-top">
-                        <td className="px-3 py-2">{m.subject}</td>
-                        <td className="px-3 py-2">{m.code}</td>
-                        <td className="px-3 py-2">{m.nqf}</td>
-                        <td className="px-3 py-2">{m.credits}</td>
-                        <td className="px-3 py-2">{m.prereq?.length ? m.prereq.join(", ") : "—"}</td>
+                      <tr key={m.code} className="hover:bg-lavender/5 transition">
+                        <td className="px-4 py-3 text-primary-800">{m.subject}</td>
+                        <td className="px-4 py-3 text-primary-800">{m.code}</td>
+                        <td className="px-4 py-3 text-primary-800">{m.nqf}</td>
+                        <td className="px-4 py-3 text-primary-800">{m.credits}</td>
+                        <td className="px-4 py-3 text-primary-800">{m.prereq?.length ? m.prereq.join(", ") : "—"}</td>
                       </tr>
                     ))}
                   </React.Fragment>
@@ -293,20 +335,20 @@ export default function StudentHome(){
           </div>
         </Card>
 
-        {/* Qualifications grid */}
+        {/* Qualifications grid — Admin card look */}
         <Card>
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">What is your next study option</h3>
-            <Link className="text-sm underline" to="/courses">See all</Link>
+            <h3 className="text-xl font-heading font-bold text-primary">What is your next study option</h3>
+            <Link className="text-sm font-button text-accent hover:underline" to="/courses">See all</Link>
           </div>
           <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
             {coursesShowcase.map((course)=>(
-              <article key={course.id} className="rounded-xl overflow-hidden bg-white border shadow-sm hover:shadow transition">
+              <article key={course.id} className="rounded-xl overflow-hidden bg-white border-2 border-primary/10 shadow-sm hover:border-primary/30 transition">
                 <img src={course.image} alt={course.title} className="h-36 w-full object-cover" loading="lazy" />
                 <div className="p-4 flex flex-col gap-2">
-                  <h4 className="font-semibold text-primary text-sm mb-1">{course.title}</h4>
+                  <h4 className="font-heading font-semibold text-primary text-sm">{course.title}</h4>
                   {course.badges?.length ? (
-                    <div className="flex flex-wrap gap-1.5 mb-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {course.badges.slice(0,3).map((b,i)=>(
                         <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 bg-cream/60">
                           {b}
@@ -314,39 +356,54 @@ export default function StudentHome(){
                       ))}
                     </div>
                   ) : null}
-                  <p className="text-xs text-primary/70">{course.blurb}</p>
+                  <p className="text-xs text-primary-800/80 font-sans">{course.blurb}</p>
                   <div className="mt-1 flex items-center gap-3">
                     <Link to={`/courses/${course.id}#overview`} className="text-xs text-accent font-button hover:underline">View →</Link>
-                    <Link to={`/courses/${course.id}#more`} className="text-[11px] text-primary/70 hover:underline">Read more</Link>
+                    <Link to={`/courses/${course.id}#more`} className="text-[11px] text-primary-800/70 hover:underline">Read more</Link>
                   </div>
                 </div>
               </article>
             ))}
           </div>
         </Card>
-      </section>
+      </div>
+
       <MessagesDrawer open={drawer} onClose={()=>setDrawer(false)} />
     </div>
   );
 }
 
-/* Helpers */
-function Stat({label,value,onClick}){
+/* Reusable UI (Admin look) */
+function StatCard({ icon:Icon, color, label, value, change }) {
   return (
-    <button type="button" onClick={onClick}
-      className="rounded-xl border bg-white p-3 text-left shadow-sm hover:shadow transition w-full">
-      <div className="text-[11px] uppercase tracking-wide text-primary/60">{label}</div>
-      <div className="text-base font-semibold text-primary">{value}</div>
-    </button>
+    <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10 hover:border-primary/30 transition">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`${color} p-3 rounded-lg shadow-md`}>
+          <Icon className="w-6 h-6 text-cream" />
+        </div>
+        <span className={`text-xs font-button font-bold px-2 py-1 rounded-full ${
+          String(change).startsWith("+") || change === "—" ? "bg-accent/20 text-accent" : "bg-redbrown/20 text-redbrown"
+        }`}>{change}</span>
+      </div>
+      <p className="text-primary-800 text-sm font-medium font-sans">{label}</p>
+      <p className="text-3xl font-heading font-bold text-primary mt-1">{value}</p>
+    </div>
   );
 }
+
 function QuickAction({label,onClick}){
   return (
-    <button onClick={onClick} className="px-3 py-1.5 rounded-lg border bg-white shadow-sm hover:bg-cream transition">
+    <button onClick={onClick}
+      className="px-3 py-1.5 rounded-md border-2 border-primary/20 bg-white text-primary font-button hover:bg-lavender/20 transition shadow-sm">
       {label}
     </button>
   );
 }
+
 function Card({children,className=""}){
-  return <div className={`rounded-2xl border bg-white p-5 shadow-sm ${className}`}>{children}</div>;
+  return (
+    <div className={`bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10 ${className}`}>
+      {children}
+    </div>
+  );
 }
