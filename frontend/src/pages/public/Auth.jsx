@@ -2,6 +2,25 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login, getSession } from "../../api/auth";
 
+function roleHome(roleRaw) {
+  const role = String(roleRaw || "").toLowerCase();
+  if (role === "admin") return "/app/admin";
+  if (role === "tutor") return "/app/tutor";
+  return "/app/student"; // default -> student
+}
+
+/**
+ * Choose the next route:
+ * - If there's a meaningful "from" (like /app/forum/123), go there.
+ * - Otherwise go to the role home. We treat generic paths like /app, /app/home,
+ *   /app/dashboard, /app/calendar as NOT meaningful and send to role home.
+ */
+function pickNext(from, role) {
+  const bad = new Set(["/app", "/app/", "/app/home", "/app/dashboard", "/app/calendar", "/auth", "/"]);
+  if (from && !bad.has(from)) return from;
+  return roleHome(role);
+}
+
 export default function Auth() {
   const nav = useNavigate();
   const loc = useLocation();
@@ -17,9 +36,14 @@ export default function Auth() {
     (async () => {
       try {
         const s = await getSession();
-        if (alive && s?.active && s?.user) {
+        if (!alive) return;
+
+        if (s?.active && s?.user) {
           localStorage.setItem("cl_auth", JSON.stringify({ user: s.user, token: "cookie" }));
-          const next = loc.state?.from?.pathname || "/app/calendar";
+          localStorage.setItem("cl_user", JSON.stringify(s.user)); // keep in sync with guards
+
+          const from = loc.state?.from?.pathname;
+          const next = pickNext(from, s.user.role);
           nav(next, { replace: true });
         }
       } catch {
@@ -35,14 +59,15 @@ export default function Auth() {
     setBusy(true);
     try {
       if (!email || !password) throw new Error("Please enter your email and password.");
-      const data = await login({ email, password });
-      // cookie is set by backend; persist minimal user in localStorage for UI needs
+
+      const data = await login({ email, password }); // backend sets cookie
       localStorage.setItem("cl_auth", JSON.stringify({ user: data.user, token: "cookie" }));
-      const next = loc.state?.from?.pathname || "/app/calendar";
+      localStorage.setItem("cl_user", JSON.stringify(data.user));
+
+      const from = loc.state?.from?.pathname;
+      const next = pickNext(from, data.user.role);
       nav(next, { replace: true });
     } catch (err) {
-      // Backend returns 401 for both non-existent users and wrong passwords.
-      // Give a helpful message with Register CTA.
       const msg =
         err?.response?.data?.error ||
         err?.message ||

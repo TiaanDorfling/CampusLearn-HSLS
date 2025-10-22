@@ -1,4 +1,3 @@
-// frontend/src/routes/guards/AuthGuard.jsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSession } from "../../api/auth";
@@ -11,6 +10,13 @@ function getLocal() {
   }
 }
 
+function roleHome(roleRaw) {
+  const role = String(roleRaw || "").toLowerCase();
+  if (role === "admin") return "/app/admin";
+  if (role === "tutor") return "/app/tutor";
+  return "/app/student"; // default -> student
+}
+
 export default function AuthGuard({ children }) {
   const location = useLocation();
   const [checked, setChecked] = useState(false);
@@ -18,33 +24,28 @@ export default function AuthGuard({ children }) {
 
   useEffect(() => {
     let alive = true;
-    
+
     (async () => {
       try {
         const local = getLocal();
-        
-        // If we have local auth, trust it (already validated)
+
+        // If we have local auth, trust it (already validated previously)
         if (local?.user) {
-          if (alive) { 
-            setActive(true); 
-            setChecked(true); 
+          if (alive) {
+            setActive(true);
+            setChecked(true);
           }
           return;
         }
-        
-        // Otherwise, check with server
+
+        // Otherwise, ask the server
         const s = await getSession();
         if (!alive) return;
-        
+
         if (s?.active && s?.user) {
-          localStorage.setItem("cl_auth", JSON.stringify({ 
-            user: s.user, 
-            token: "cookie" 
-          }));
-          
-          // Also set cl_user for consistency with routes/index.jsx
-          localStorage.setItem("cl_user", JSON.stringify(s.user));
-          
+          // Persist to localStorage for route checks
+          localStorage.setItem("cl_auth", JSON.stringify({ user: s.user, token: "cookie" }));
+          localStorage.setItem("cl_user", JSON.stringify(s.user)); // compatibility
           setActive(true);
         } else {
           setActive(false);
@@ -56,11 +57,11 @@ export default function AuthGuard({ children }) {
         if (alive) setChecked(true);
       }
     })();
-    
-    return () => { alive = false; };
-  }, []); // ✅ Empty dependency array - only run once on mount
 
-  // Show loading state while checking auth
+    return () => { alive = false; };
+  }, []); // run once
+
+  // Loading state while verifying
   if (!checked) {
     return (
       <div style={{ display: "grid", placeItems: "center", height: "100vh" }}>
@@ -69,10 +70,18 @@ export default function AuthGuard({ children }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Not authenticated -> go to login
   if (!active) {
     return <Navigate to="/auth" replace state={{ from: location }} />;
   }
-  
+
+  // Authenticated: if user is at a generic entry point, send to home by role
+  const path = location.pathname.toLowerCase();
+  const shouldRedirectToRoleHome = path === "/app" || path === "/app/" || path === "/app/home" || path === "/app/dashboard";
+  if (shouldRedirectToRoleHome) {
+    const local = getLocal();
+    return <Navigate to={roleHome(local?.user?.role)} replace />;
+  }
+
   return children || <Outlet />;
 }

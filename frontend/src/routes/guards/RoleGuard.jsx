@@ -9,12 +9,22 @@ function getAuth() {
   }
 }
 
+function roleHome(roleRaw) {
+  const role = String(roleRaw || "").toLowerCase();
+  if (role === "admin") return "/app/admin";
+  if (role === "tutor") return "/app/tutor";
+  return "/app/student"; 
+}
+
 export default function RoleGuard({ allow = [] }) {
   const auth = getAuth();
-  const role = auth?.user?.role;
+  const role = String(auth?.user?.role || "").toLowerCase();
 
-  if (!role || (allow.length && !allow.includes(role))) {
-    return <Navigate to="/auth" replace />;
+  if (!auth?.user) return <Navigate to="/auth" replace />;
+
+  if (allow.length && !allow.map(r => String(r).toLowerCase()).includes(role)) {
+    return <Navigate to={roleHome(role)} replace />;
   }
+
   return <Outlet />;
 }

@@ -184,7 +184,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
           <div className="mb-6 rounded-lg border-2 border-redbrown/60 p-4 text-sm text-redbrown bg-cream flex items-start gap-2 shadow-md">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 shrink-0  mt-0.5" />
             <span>{error}</span>
           </div>
         )}
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
           <div className="space-y-3">
             {recentActivity.map(activity => (
               <div key={activity.id} className="flex items-start gap-4 p-3 bg-cream/50 rounded-lg">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                   activity.type === 'enrollment' ? 'bg-accent/20' :
                   activity.type === 'user' ? 'bg-primary/20' :
                   activity.type === 'course' ? 'bg-lavender/20' : 'bg-redbrown/20'
