@@ -1,5 +1,5 @@
 //App.jsx
-import React from "react";
+import React, { useEffect } from "react"; 
 import AppRoutes from "./routes/index.jsx";
 
 class ErrorBoundary extends React.Component {
@@ -27,6 +27,15 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <AppRoutes />
