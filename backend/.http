@@ -1,210 +1,463 @@
+# =============================================================================
+# CampusLearn Backend API – Full Test Suite (VS Code REST Client / HTTPYac)
+# Updated: 2025-10-22
+# Notes:
+#  • This suite assumes ALL roles may use the campus *student* email domain,
+#    which matches your current UserModel regex.
+#  • Cookies are captured automatically after login.
+#  • IDs are captured from responses and reused later.
+#  • For file uploads, ensure the file path exists on disk.
+# =============================================================================
+
+@host = http://127.0.0.1:5000
+@base = {{host}}/api
+@json = application/json
+
+@student_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4OTY5ODM1MzkyNzE3Y2EyYjVkMTMiLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MTEzMzA1NSwiZXhwIjoxNzYxMTM2NjU1fQ.HicmA99WSPG2W96uNv_Kr1RarDKBz5W5vYphqBkvQp0
+@student_id = 68f8969835392717ca2b5d13
+
+@tutor_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4YzU5NzA5ZWFlMjhkZjM5MzRhZWQiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjExMzQwNjQsImV4cCI6MTc2MTEzNzY2NH0.EBaYKM-FpBzEnawhPkkwo1fRMKo-np4ymOc8DlKtl38
+@tutor_id = 68f8c59709eae28df3934aed
+
+@admin_cookie = jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGY4YzdjZjA5ZWFlMjhkZjM5MzRiMmEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjExMzQ1NTksImV4cCI6MTc2MTEzODE1OX0.J9SeWEESXaM18-ippDyD3F6RDrkWhW7ZvMVwfXRCR4I
+@admin_id = 68f8c7cf09eae28df3934b2a
+
+@topic_id = 68f8c2d609eae28df3934ad0
+
+@forum_category_id = 68f8c34109eae28df3934ad8
+@forum_thread_id = 68f8c37809eae28df3934ada
+
+@question_id = 68f8c3e509eae28df3934ae0
+
+@pm_message_id = 68f8c67409eae28df3934b09
+
+@notification_id = 68f8c67409eae28df3934b0c
+
+@submission_id = 68f8c53509eae28df3934ae8
+
+@calendar_event_id = 68f8c75109eae28df3934b1d
+###
+# ┌───────────────────────────────────────────────────────────────────────────┐
+# │ 0) HEALTH + DIAGNOSTICS                                                   │
+# └───────────────────────────────────────────────────────────────────────────┘
+GET {{host}}/healthz
+
+###
+GET {{base}}/health
+
+###
+GET {{base}}/index
+# (expected 404 – route not defined intentionally)
+
+###
+GET {{base}}/health/env-keys
+
 ################################################################################
-# 🌐 BACKEND API TEST SUITE — CampusLearn (Free Model)
-# Use this file with VSCode REST Client or similar REST tester.
-# Make sure backend is running on http://localhost:5000 before testing.
+# 1) AUTHENTICATION – Register 3 users (student, tutor, admin) + log them in  #
 ################################################################################
 
-############################################
-### 1️⃣ HEALTH CHECKS
-############################################
-
-### ✅ Basic server health
-GET http://localhost:5000/health
-
-### ✅ Environment key validation (checks loaded env vars)
-GET http://localhost:5000/health/env-keys
-
-
-############################################
-### 2️⃣ AUTHENTICATION & USER MANAGEMENT
-############################################
-
-### 🧍‍♂️ Register a new STUDENT account
-POST http://localhost:5000/api/auth/register
-Content-Type: application/json
+### Register Student
+POST {{base}}/auth/register
+Content-Type: {{json}}
 
 {
-  "name": "Test Student",
-  "email": "student1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!",
+  "name": "Alice Student",
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!",
   "role": "student"
 }
 
-### 🧑‍🏫 Register a new TUTOR account
-POST http://localhost:5000/api/auth/register
-Content-Type: application/json
+### Register Tutor
+POST {{base}}/auth/register
+Content-Type: {{json}}
 
 {
-  "name": "Tutor Example",
-  "email": "tutor1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!",
+  "name": "Tom Tutor",
+  "email": "tom.tutor@student.belgiumcampus.ac.za",
+  "password": "Tutor123!",
   "role": "tutor"
 }
 
-### 👑 Register a new ADMIN account
-POST http://localhost:5000/api/auth/register
-Content-Type: application/json
+### Register Admin
+POST {{base}}/auth/register
+Content-Type: {{json}}
 
 {
-  "name": "Admin Example",
-  "email": "admin1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!",
+  "name": "Ada Admin",
+  "email": "ada.admin@student.belgiumcampus.ac.za",
+  "password": "Admin123!",
   "role": "admin"
 }
 
-### 🔑 Login (replace with the email you registered above)
-POST http://localhost:5000/api/auth/login
-Content-Type: application/json
+### Login (Student) -> capture cookie + id
+POST {{base}}/auth/login
+Content-Type: {{json}}
 
 {
-  "email": "tutor1@student.belgiumcampus.ac.za",
-  "password": "StrongPass123!"
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!"
 }
 
-### 🔒 Check current session (requires jwt cookie from login)
-GET http://localhost:5000/api/auth/session
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MDQsImV4cCI6MTc2MDUyOTIwNH0.UoDugs6DMz24DmY1ILxfQml9KecgYa0zpFDmknytQKo
-
-### 🚪 Logout (clears the cookie)
-POST http://localhost:5000/api/auth/logout
-
-
-############################################
-### 3️⃣ USER MANAGEMENT (requires ADMIN login)
-############################################
-
-### 🧩 Admin creates a new user manually
-POST http://localhost:5000/api/user/create-user
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MDQsImV4cCI6MTc2MDUyOTIwNH0.UoDugs6DMz24DmY1ILxfQml9KecgYa0zpFDmknytQKo
+### Login (Tutor) -> capture cookie + id
+POST {{base}}/auth/login
+Content-Type: {{json}}
 
 {
-  "name": "Created By Admin",
-  "email": "createdbyadmin@student.belgiumcampus.ac.za",
-  "password": "AdminMade123!",
-  "role": "student"
+  "email": "tom.tutor@student.belgiumcampus.ac.za",
+  "password": "Tutor123!"
 }
 
-### ✏️ Admin updates a user's profile
-PUT http://localhost:5000/api/user/update/68ef7b760ee0cffcd37dd324
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MDQsImV4cCI6MTc2MDUyOTIwNH0.UoDugs6DMz24DmY1ILxfQml9KecgYa0zpFDmknytQKo
+### Login (Admin) -> capture cookie + id
+POST {{base}}/auth/login
+Content-Type: {{json}}
 
 {
-  "name": "Updated Student Name",
-  "email": "updatedstudent@student.belgiumcampus.ac.za"
+  "email": "ada.admin@student.belgiumcampus.ac.za",
+  "password": "Admin123!"
 }
 
-### ❌ Admin deletes a user
-DELETE http://localhost:5000/api/user/delete/68ef7b760ee0cffcd37dd324
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MDQsImV4cCI6MTc2MDUyOTIwNH0.UoDugs6DMz24DmY1ILxfQml9KecgYa0zpFDmknytQKo
+### Validate session (student)
+GET {{base}}/auth/session
+Cookie: {{student_cookie}}
 
-### 🧠 User updates their own profile (self-service)
-PUT http://localhost:5000/api/user/update-user
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MDQsImV4cCI6MTc2MDUyOTIwNH0.UoDugs6DMz24DmY1ILxfQml9KecgYa0zpFDmknytQKo
+### Logout (student)
+POST {{base}}/auth/logout
+Cookie: {{student_cookie}}
+
+### Re-login (student) to proceed with tests
+POST {{base}}/auth/login
+Content-Type: {{json}}
 
 {
-  "name": "Updated My Own Name"
+  "email": "alice.student@student.belgiumcampus.ac.za",
+  "password": "Password123!"
 }
 
+################################################################################
+# 2) USER + ADMIN                                                              #
+################################################################################
 
-############################################
-### 4️⃣ TOPICS MODULE
-############################################
+### List Users (open – auth optional in your users.js)
+GET {{base}}/users?limit=50
 
-### 📖 Get all topics (requires login)
-GET http://localhost:5000/api/topics
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFU
-
-### ➕ Create a new topic (requires login)
-POST http://localhost:5000/api/topics
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFU
+### Update MY profile (student)
+PUT {{base}}/user/update-user
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "title": "Data Structures Assignment Help",
-  "body": "Can someone explain linked list complexity analysis?",
-  "moduleCode": "SEN381",
-  "tags": ["linked-list", "complexity", "algorithms"]
+  "name": "Alice S. (updated)"
 }
 
-### 🔍 Search topics by keyword
-GET http://localhost:5000/api/topics?keyword=linkedeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFUeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmNjU4ZDY1Mjg3OGQ5Mjg4NjkiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjA1MjU2MzksImV4cCI6MTc2MDUyOTIzOX0.LBZlOhq4OE-NU-MphPHJYlA26W6wvoBN3Dx_-h8QADw
-
-### Subscribe to topic
-POST http://localhost:5000/api/topics/subscribe
-Content-Type: application/json
+### Admin – Update tutor name
+PUT {{base}}/user/update/{{tutor_id}}
+Cookie: {{admin_cookie}}
+Content-Type: {{json}}
 
 {
-  "topicId": "68f0f57183f54878f967e32b"
+  "name": "Tom Tutor (updated by admin)"
 }
 
-### Remove subscriber by id
-DELETE  http://localhost:5000/api/topics/unsubscribe
-Content-Type: application/json
+### Admin – Delete (example) – NO-OP by default (uncomment to test)
+# DELETE {{base}}/user/delete/{{student_id}}
+# Cookie: {{admin_cookie}}
+
+################################################################################
+# 3) STUDENT + TUTOR PROFILES                                                  #
+################################################################################
+
+### Student – upsert my student profile
+PUT {{base}}/student/me
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "topicId": "68f0f57183f54878f967e32b"
+  "studentNumber": "S1234567",
+  "year": "3",
+  "phone": "+27 555 1111",
+  "about": "Interested in web dev and databases.",
+  "emergencyContact": { "name": "Mom", "phone": "+27 555 2222" }
 }
 
-### Upload Resource to a Topic (Local Disk Storage)
-POST http://localhost:5000/api/topics/68f0f57183f54878f967e32b/resource
-Content-Type: multipart/form-data; boundary=---------------------------735323031399963166993862150
-Cookie: jwt=YOUR_VALID_JWT_TOKEN_HERE
+### Student – get my profile
+GET {{base}}/student/me
+Cookie: {{student_cookie}}
 
------------------------------735323031399963166993862150
-Content-Disposition: form-data; name="resourceFile"; filename="my_new_resource.pdf"
+### Tutor – upsert my tutor profile
+PUT {{base}}/tutor/me
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "bio": "Senior tutor for SEN381.",
+  "phone": "+27 555 3333",
+  "assignedModules": ["SEN381","DBS200"],
+  "tutorTopics": ["Web Dev", "Databases"]
+}
+
+### Tutor – get my profile
+GET {{base}}/tutor/me
+Cookie: {{tutor_cookie}}
+
+### Tutor – list students (search)
+GET {{base}}/tutor/{{tutor_id}}/students?page=1&q=
+Cookie: {{tutor_cookie}}
+
+################################################################################
+# 4) TOPICS + RESOURCES + BROADCASTS                                           #
+################################################################################
+
+### Create Topic (authenticated user)
+POST {{base}}/topics
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Business Management 381 - BIM381",
+  "description": "General discussion, resources, and Q&A.",
+  "moduleCode": "BIM381",
+  "tags": ["management","design","patterns"]
+}
+
+### List Topics (search)
+GET {{base}}/topics?keyword=management
+Cookie: {{student_cookie}}
+
+### Subscribe to Topic
+POST {{base}}/topics/{{topic_id}}/subscribe
+Cookie: {{student_cookie}}
+
+### Unsubscribe from Topic (optional)
+# DELETE {{base}}/topics/{{topic_id}}/unsubscribe
+# Cookie: {{student_cookie}}
+
+### Upload Resource to Topic (multipart)
+# Ensure this file exists relative to backend/ (change path if needed)
+POST {{base}}/topics/{{topic_id}}/resource
+Cookie: {{tutor_cookie}}
+Content-Type: multipart/form-data; boundary=boundary42
+
+Content-Disposition: form-data; name="resourceFile"; filename="notes.pdf"
 Content-Type: application/pdf
 
-< /path/to/your/local/file/my_new_resource.pdf
------------------------------735323031399963166993862150--
+< ./uploads/Notes.pdf >
 
-############################################
-### 5️⃣ QUESTIONS MODULE
-############################################
-
-### 📝 Post a new question (Student only)
-POST http://localhost:5000/api/questions
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFU
+### Broadcast to Topic (store a tutor/admin comment)
+POST {{base}}/topics/{{topic_id}}/broadcast
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
 
 {
-  "title": "How to connect Mongoose to MongoDB Atlas?",
-  "body": "I keep getting authentication failed errors even though I used the right URI.",
-  "moduleCode": "SEN381"
+  "message": "Please review the new lecture slides before next class."
 }
 
-### 📚 Get all questions (feed)
-GET http://localhost:5000/api/questions
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFU
+################################################################################
+# 5) FORUM (categories, threads, posts)                                        #
+################################################################################
 
-### Tutor Posts Response to a Question
-POST http://localhost:5000/api/questions/68ef808158d652878d928880/response
-Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2NmMjU4ZDY1Mjg3OGQ5Mjg4NjYiLCJyb2xlIjoidHV0b3IiLCJpYXQiOjE3NjA2NDQwOTcsImV4cCI6MTc2MDY0NzY5N30.OEceP16hRtvqjdQGlgDzS7xihXf5nahjtPpleuJlGmA; jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGVmN2ZkYjU4ZDY1Mjg3OGQ5Mjg4NzciLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2MDUyNjM4NCwiZXhwIjoxNzYwNTI5OTg0fQ.Boq6M0lLKmuEc32SlBF2pDnuiQHXkPf_ADiuq7qQcFU
+### Create Forum Category
+POST {{base}}/forum/categories
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "content": "A detailed explanation: The core principle is related to Malthusian theory, which posits that population growth tends to outstrip food supply.",
-  "isAnonymous": false 
+  "name": "General Q&A",
+  "description": "Ask anything about the course."
 }
 
-############################################
-### 6️⃣ STUDENT FACTORY TEST (Temporary)
-############################################
-
-### 🧪 Quick student creation test (does NOT persist to DB)
-GET http://localhost:5000/students/get-student
-
-
-############################################
-### 7️⃣ AI CHAT (Gemini Free Model)
-############################################
-
-### 🤖 Ask the AI Tutor a question
-POST http://localhost:5000/api/ai/chat
-Content-Type: application/json
+### Create Forum Thread
+POST {{base}}/forum/threads
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
 
 {
-  "message": "Explain the difference between synchronous and asynchronous code in JavaScript."
+  "categoryId": "{{forum_category_id}}",
+  "title": "Help with Assignment 3 (Management)"
+}
+
+### List Threads in Category
+GET {{base}}/forum/threads?category={{forum_category_id}}
+Cookie: {{student_cookie}}
+
+### Post Reply in Thread
+POST {{base}}/forum/posts
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "threadId": "{{forum_thread_id}}",
+  "content": "Remember to separate concerns into layers (UI, service, repo)."
+}
+
+### List Posts for Thread
+GET {{base}}/forum/posts?thread={{forum_thread_id}}
+Cookie: {{student_cookie}}
+
+################################################################################
+# 6) QUESTIONS + RESPONSES                                                     #
+################################################################################
+
+### Ask Question (student)
+POST {{base}}/questions
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Clarification on manager best practices",
+  "body": "What are some best practices for managers when leading a software team?",
+  "moduleCode": "BIM381"
+}
+
+### Tutor answers question
+POST {{base}}/questions/{{question_id}}/response
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "content": "Kindness, clear communication, and setting realistic goals are key.",
+  "isAnonymous": false
+}
+
+### Fetch responses
+GET {{base}}/questions/{{question_id}}/responses
+Cookie: {{student_cookie}}
+
+### List all questions
+GET {{base}}/questions
+Cookie: {{student_cookie}}
+
+################################################################################
+# 7) PRIVATE MESSAGES (PM) + NOTIFICATIONS                                     #
+################################################################################
+
+### Send PM (student -> tutor) using toUserId
+POST {{base}}/pm
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "toUserId": "{{tutor_id}}",
+  "subject": "Quick check",
+  "body": "Hi, could you review my submission feedback?"
+}
+
+### Get PM inbox (as tutor)
+GET {{base}}/pm
+Cookie: {{tutor_cookie}}
+
+### Mark PM as read (as tutor)
+PATCH {{base}}/pm/{{pm_message_id}}/read
+Cookie: {{tutor_cookie}}
+
+### Get Notifications (as tutor – should include the PM notify)
+GET {{base}}/notifications
+Cookie: {{tutor_cookie}}
+
+### Mark notification as read
+PATCH {{base}}/notifications/{{notification_id}}/read
+Cookie: {{tutor_cookie}}
+
+################################################################################
+# 8) RESOURCES APIs (query + mine)                                             #
+################################################################################
+
+### List resources for topic (simple pass-through list – if implemented)
+GET {{base}}/resources?topic={{topic_id}}
+Cookie: {{student_cookie}}
+
+### List my uploaded resources (if implemented)
+GET {{base}}/resources/mine
+Cookie: {{tutor_cookie}}
+
+################################################################################
+# 9) SUBMISSIONS                                                               #
+################################################################################
+
+### Submit Assignment (student)
+POST {{base}}/submissions
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "courseCode": "BIM381",
+  "title": "Assignment 3 – Business Management Best Practices",
+  "fileUrl": "/uploads/topic-resources/sample.pdf"
+}
+
+### Get my Submissions (student)
+GET {{base}}/submissions/mine
+Cookie: {{student_cookie}}
+
+### List all Submissions (tutor/admin)
+# If your route supports filtering, the backend expects 'courseCode' (not 'course')
+GET {{base}}/submissions?q=&courseCode=BIM381&page=1&limit=25
+Cookie: {{tutor_cookie}}
+
+### Grade / Update a submission (tutor/admin)
+PATCH {{base}}/submissions/{{submission_id}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "grade": 78,
+  "feedback": "Good structure and clear separation of concerns."
+}
+
+################################################################################
+# 10) CALENDAR                                                                 #
+################################################################################
+
+### Create Calendar Event (tutor)
+POST {{base}}/calendar
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Consultation with students",
+  "startsAt": "2025-10-23T14:00:00.000Z",
+  "endsAt":   "2025-10-23T14:30:00.000Z",
+  "location": "Room 204",
+  "details": "Bring questions about Assignment 3."
+}
+
+### Query Calendar Range
+GET {{base}}/calendar?from=2025-10-22T00:00:00.000Z&to=2025-10-24T23:59:59.000Z
+Cookie: {{tutor_cookie}}
+
+### Update Calendar Event
+# (after creating, set {{calendar_event_id}} from the create response)
+PATCH {{base}}/calendar/{{calendar_event_id}}
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "title": "Consultation (rescheduled)",
+  "location": "Lab 3"
+}
+
+### Delete Calendar Event
+DELETE {{base}}/calendar/{{calendar_event_id}}
+Cookie: {{tutor_cookie}}
+
+
+################################################################################
+# 11) AI (Simulated)                                                           #
+################################################################################
+
+### Ask AI (student)
+POST {{base}}/ai/chat
+Cookie: {{student_cookie}}
+Content-Type: {{json}}
+
+{
+  "prompt": "Explain the difference between recursion and iteration"
+}
+
+### Ask AI (tutor)
+POST {{base}}/ai/chat
+Cookie: {{tutor_cookie}}
+Content-Type: {{json}}
+
+{
+  "prompt": "What is MongoDB?"
 }

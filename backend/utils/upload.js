@@ -1,30 +1,65 @@
-import multer from 'multer';
-import path from 'path';
+// backend/utils/upload.js
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Define the directory where files will be saved
-const UPLOAD_DESTINATION = 'uploads/topic-resources/';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Configure disk storage
-const storage = multer.diskStorage({
-  // 1. Define the destination folder
-  destination: function (req, file, cb) {
-    // NOTE: This folder MUST exist before the server runs!
-    cb(null, UPLOAD_DESTINATION); 
-  },
-  // 2. Define a unique filename
-  filename: function (req, file, cb) {
-    // Uses the original extension and appends a timestamp to prevent name clashes
-    const ext = path.extname(file.originalname);
-    // Assuming topicId is available in req.params (e.g., from the URL)
-    const topicIdentifier = req.params.topicId || 'unknown'; 
-    cb(null, `${topicIdentifier}-${Date.now()}${ext}`);
+// Absolute path to "<repo>/backend/uploads/topic-resources"
+const UPLOAD_DIR = path.resolve(__dirname, "..", "uploads", "topic-resources");
+
+// Ensure folder exists at startup
+function ensureDir(p) {
+  try {
+    fs.mkdirSync(p, { recursive: true });
+  } catch (e) {
+    // no-op
   }
+}
+ensureDir(UPLOAD_DIR);
+
+// Basic, safe filename sanitizer
+function sanitizeName(name) {
+  return String(name).replace(/[^a-zA-Z0-9._-]+/g, "_");
+}
+
+// Optional: limit file types (tweak as needed)
+const allowed = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+]);
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, UPLOAD_DIR);
+  },
+  filename(req, file, cb) {
+    // Your route is "/api/topics/:id/resource", so param is "id" (not topicId)
+    const topicId = req.params.id || "topic";
+    const ts = Date.now();
+    const base = sanitizeName(file.originalname || "upload.bin");
+    cb(null, `${topicId}-${ts}-${base}`);
+  },
 });
 
-// Create the Multer instance
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 1024 * 1024 * 5 } // Optional: Limit file size to 5MB
+function fileFilter(req, file, cb) {
+  if (allowed.size === 0) return cb(null, true);
+  if (allowed.has(file.mimetype)) return cb(null, true);
+  return cb(new Error(`Unsupported file type: ${file.mimetype}`), false);
+}
+
+const MAX_SIZE_MB = Number(process.env.MAX_UPLOAD_MB || 10);
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: MAX_SIZE_MB * 1024 * 1024 },
 });
 
 export default upload;
