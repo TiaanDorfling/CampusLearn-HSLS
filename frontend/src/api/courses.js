@@ -1,7 +1,7 @@
 export async function listMyCourses() {
   const r = await fetch("/api/courses/mine", { credentials: "include" });
   if (!r.ok) throw new Error("Failed to load courses");
-  return r.json(); // { items: [...] }
+  return r.json(); 
 }
 export async function createCourse(payload) {
   const r = await fetch("/api/courses", {

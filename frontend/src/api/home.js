@@ -2,8 +2,6 @@
 
 
 export async function getStudentHome() {
-  // expect the backend to return:
-  // { nextClass: {...} | null, schedule: [...], unread: { items: [...] } }
   const r = await fetch("/api/home/student", { credentials: "include" });
   if (!r.ok) throw new Error("Failed to load student home");
   return r.json();
