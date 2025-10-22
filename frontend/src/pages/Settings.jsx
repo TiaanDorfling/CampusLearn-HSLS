@@ -15,7 +15,7 @@ export default function Settings() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-heading text-primary">Settings</h1>
-            <p className="text-primary/70 mt-1">Configure your account and app preferences (placeholder).</p>
+            <p className="text-primary/70 mt-1">Configure your account and app preferences.</p>
           </div>
         </div>
       </section>
@@ -30,17 +30,14 @@ export default function Settings() {
             <Toggle label="SMS notifications" />
             <Toggle label="Dark mode" />
           </div>
-          <div className="mt-6">
-            <button className="px-3 py-1.5 rounded-lg border bg-white shadow-sm hover:bg-cream">Save (placeholder)</button>
-          </div>
         </Card>
 
         <Card>
           <h3 className="font-semibold">Privacy</h3>
           <div className="mt-4 space-y-3 text-sm">
-            <PlaceholderRow label="Show profile to classmates" />
-            <PlaceholderRow label="Share course progress with tutors" />
-            <PlaceholderRow label="Allow message requests" />
+            <Toggle label="Show profile to classmates"/>
+            <Toggle label="Share course progress with tutors" />
+            <Toggle label="Allow message requests" />
           </div>
         </Card>
       </div>

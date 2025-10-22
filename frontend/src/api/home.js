@@ -6,9 +6,7 @@ const BASE = "/api";
 /* ===================== STUDENT ===================== */
 
 export async function getStudentHome() {
-  // Expected shape:
-  // { nextClass: {...} | null, schedule: [...], unread: { items: [...] } }
-  const r = await fetch(`${BASE}/home/student`, { credentials: "include" });
+  const r = await fetch("/api/home/student", { credentials: "include" });
   if (!r.ok) throw new Error("Failed to load student home");
   return r.json();
 }
