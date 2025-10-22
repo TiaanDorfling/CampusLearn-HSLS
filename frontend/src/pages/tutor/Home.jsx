@@ -198,7 +198,7 @@ export default function TutorHome() {
        
       </section>
 
-      <MessagesDrawer open={drawer} onClose={() => setDrawer(false)} />
+     
     </div>
   );
 }
