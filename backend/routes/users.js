@@ -1,26 +1,15 @@
 // backend/routes/users.js
 import express from "express";
-import mongoose from "mongoose";
-import { auth } from "../middleware/auth.js"; // use auth(true) if your login cookies are set
+import { auth } from "../middleware/auth.js";
+import User from "../model/UserModel.js";
 
 const router = express.Router();
 
-// Bind/reuse User model to 'users' collection
-const User =
-  mongoose.models.User ||
-  mongoose.model(
-    "User",
-    new mongoose.Schema(
-      {
-        name:  { type: String, required: true },
-        email: { type: String, required: true, unique: true, index: true },
-        role:  { type: String, enum: ["student", "tutor", "admin"], required: true },
-      },
-      { collection: "users", timestamps: true }
-    )
-  );
-
-// GET /api/users?limit=30&q=&role=
+/**
+ * GET /api/users?limit=30&q=&role=
+ * Public (or logged-in) list of users for pickers, search, etc.
+ * Uses the single UserModel to avoid duplicate index warnings.
+ */
 router.get("/", auth(false), async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(Number(req.query.limit) || 30, 100));

@@ -1,18 +1,21 @@
 // backend/model/Notification.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const NotificationSchema = new mongoose.Schema(
+const { Schema, model, models } = mongoose;
+
+const NotificationSchema = new Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
-    type: { type: String, enum: ['info', 'warning', 'error'], default: 'info' },
-    message: { type: String, required: true },
-    read: { type: Boolean, default: false },
-    meta: { type: Object }, // optional extra payload
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    type: { type: String, enum: ["message", "forum", "system"], default: "system", index: true },
+    title: { type: String, default: "" },
+    text:  { type: String, default: "" },
+    data:  { type: Schema.Types.Mixed, default: {} }, // anything useful (messageId, convoId, etc.)
+    read:  { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true, collection: "notifications" }
 );
 
-NotificationSchema.index({ userId: 1, createdAt: -1 });
+NotificationSchema.index({ user: 1, createdAt: -1 });
 
-const Notification = mongoose.model('Notification', NotificationSchema);
+const Notification = models.Notification || model("Notification", NotificationSchema);
 export default Notification;
