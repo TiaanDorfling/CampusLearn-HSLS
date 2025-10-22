@@ -27,14 +27,14 @@ export default function AppLayout() {
     <div className="min-h-screen bg-cream relative">
       {/* Decorative side accents */}
       <div aria-hidden className="pointer-events-none fixed inset-y-0 left-0 -z-10 w-40 md:w-56 lg:w-64">
-        <div className="h-full w-full bg-gradient-to-b from-lavender/25 via-cream/10 to-transparent blur-2xl" />
+        <div className="h-full w-full bg-linear-to-b from-lavender/25 via-cream/10 to-transparent blur-2xl" />
       </div>
       <div aria-hidden className="pointer-events-none fixed inset-y-0 right-0 -z-10 w-40 md:w-56 lg:w-64">
-        <div className="h-full w-full bg-gradient-to-t from-lavender/25 via-cream/10 to-transparent blur-2xl" />
+        <div className="h-full w-full bg-linear-to-t from-lavender/25 via-cream/10 to-transparent blur-2xl" />
       </div>
 
       {/* Optional top tint for depth */}
-      <div aria-hidden className="pointer-events-none fixed -z-10 inset-x-0 top-0 h-40 bg-gradient-to-b from-white/60 to-transparent" />
+      <div aria-hidden className="pointer-events-none fixed -z-10 inset-x-0 top-0 h-40 bg-linear-to-b from-white/60 to-transparent" />
 
       {/* Sticky Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-primary/10">
@@ -67,7 +67,7 @@ export default function AppLayout() {
             </button>
           </div>
         </div>
-        <div className="h-[3px] bg-gradient-to-r from-lavender via-cream to-white" />
+        <div className="h-[3px] bg-linear-to-r from-lavender via-cream to-white" />
       </header>
 
       {/* Content */}
