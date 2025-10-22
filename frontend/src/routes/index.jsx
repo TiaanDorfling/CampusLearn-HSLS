@@ -33,6 +33,9 @@ import MessagesCenter from "../pages/messages/MessagesCenter.jsx";
 import ForumHome from "../pages/forum/ForumHome.jsx";
 import ThreadView from "../pages/forum/ThreadView.jsx";
 
+import Profile from "../pages/Profile.jsx";           // **NEW**
+import Settings from "../pages/Settings.jsx";         // **NEW**
+
 import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
 
@@ -109,6 +112,10 @@ export default function AppRoutes() {
         {/* Forum (all roles) */}
         <Route path="forum" element={<ForumHome />} />
         <Route path="forum/:id" element={<ThreadView />} />
+
+        {/* Profile & Settings (all roles) */}
+        <Route path="profile" element={<Profile />} />       {/* **ADDED** */}
+        <Route path="settings" element={<Settings />} />     {/* **ADDED** */}
 
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />

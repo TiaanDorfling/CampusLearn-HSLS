@@ -34,7 +34,7 @@ export default function AppLayout() {
       </div>
 
       {/* Optional top tint for depth */}
-      <div aria-hidden className="pointer-events-none fixed -z-10 inset-x-0 top-0 h-40 bg-linear-to-b from-white/60 to-transparent" />
+      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 h-40 -z-10 bg-linear-to-b from-white/60 to-transparent" />
 
       {/* Sticky Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-primary/10">
