@@ -8,6 +8,7 @@ import usersRouter   from "../routes/users.js";
 import pmRouter      from "../routes/pm.js";
 import aiRouter      from "../routes/ai.js";
 import studentRouter from "../routes/studentRoutes.js";  // correct import
+import adminRouter   from "../routes/adminapi.js";       // NEW: admin routes (students/tutors/courses)
 
 const app = express();
 
@@ -41,8 +42,11 @@ app.get("/api/__db", (_req, res) => {
 app.use("/api/users",   usersRouter);
 app.use("/api/pm",      pmRouter);
 app.use("/api",         aiRouter);
-app.use("/api/students", studentRouter); 
+app.use("/api/students", studentRouter);
 
+// NEW: mount the admin API (non-conflicting models, unified endpoints)
+// -> /api/admin/students, /api/admin/tutors, /api/admin/courses
+app.use("/api/admin",   adminRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error:"Not found", path:req.originalUrl });
