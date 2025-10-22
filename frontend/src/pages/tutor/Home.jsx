@@ -118,6 +118,47 @@ export default function TutorHome() {
             “The best tutors don’t just teach — they inspire curiosity.” 🌟
           </p>
         </div>
+        <div className="mt-5">
+    <h3 className="text-lg font-semibold text-primary mb-2">🎥 Helpful YouTube Tutorials</h3>
+    <p className="text-sm text-primary/70 mb-3">
+      Explore these short videos to enhance your tutoring techniques:
+    </p>
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a
+        href="https://www.youtube.com/watch?v=KjK0dK3V2uk"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
+      >
+        <h4 className="font-semibold text-primary text-sm mb-1">How to Be an Effective Tutor</h4>
+        <p className="text-xs text-primary/60">Practical strategies for engaging and motivating students.</p>
+      </a>
+
+      <a
+        href="https://www.youtube.com/watch?v=Rk5FjBRbKzA"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
+      >
+        <h4 className="font-semibold text-primary text-sm mb-1">Building Student Confidence</h4>
+        <p className="text-xs text-primary/60">Tips to create a supportive and inspiring learning space.</p>
+      </a>
+
+      <a
+        href="https://www.youtube.com/watch?v=H6n3p1XjGG0"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
+      >
+        <h4 className="font-semibold text-primary text-sm mb-1">Engaging Online Tutoring Techniques</h4>
+        <p className="text-xs text-primary/60">Learn how to keep remote learners motivated and focused.</p>
+      </a>
+    </div>
+  </div>
+
+  <p className="mt-4 text-sm text-primary/60 italic text-center">
+    “A great tutor doesn’t just teach — they help students discover their potential.” 🌟
+  </p>
       </section>
 
       {error && (
