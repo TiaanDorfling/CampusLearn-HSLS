@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const { Schema, model } = mongoose;
+const { Schema } = mongoose;
 
 const EmergencyContactSchema = new Schema({
   phone: { type: String },
@@ -19,4 +19,6 @@ const StudentSchema = new Schema({
   timestamps: true
 });
 
-export default model("Student", StudentSchema);
+const Student = mongoose.models.Student || mongoose.model('Student', StudentSchema);
+
+export default Student;

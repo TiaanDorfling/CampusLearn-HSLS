@@ -3,33 +3,34 @@ import api from "./axios";
 
 /** Student (self) */
 export async function getMyStudent() {
-  const { data } = await api.get("/students/me");
+  const { data } = await api.get("/student/me");
+  console.log(data);
   return data; // { student, courses?, stats? }
 }
 export async function updateMyStudent(patch) {
-  const { data } = await api.patch("/students/me", patch);
+  const { data } = await api.patch("/student/me", patch);
   return data; // { student }
 }
 
 /** Admin / Tutor utilities */
 export async function listStudents(params = {}) {
   const { page = 1, q = "" } = params;
-  const { data } = await api.get("/students", { params: { page, q } });
+  const { data } = await api.get("/student", { params: { page, q } });
   return data; // { items, page, total }
 }
 export async function getStudent(id) {
-  const { data } = await api.get(`/students/${id}`);
+  const { data } = await api.get(`/student/${id}`);
   return data; // { student }
 }
 export async function createStudent(payload) {
-  const { data } = await api.post("/students", payload);
+  const { data } = await api.post("/student", payload);
   return data; // { student }
 }
 export async function updateStudent(id, patch) {
-  const { data } = await api.patch(`/students/${id}`, patch);
+  const { data } = await api.patch(`/student/${id}`, patch);
   return data; // { student }
 }
 export async function deleteStudent(id) {
-  const { data } = await api.delete(`/students/${id}`);
+  const { data } = await api.delete(`/student/${id}`);
   return data; // { ok: true }
 }
