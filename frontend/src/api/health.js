@@ -1,10 +1,6 @@
 // frontend/src/api/health.js
 import api from "./axios";
 
-/**
- * GET /healthz
- * Handles non-JSON bodies or 500s gracefully.
- */
 export async function healthz() {
   try {
     const res = await api.get("/healthz", { validateStatus: () => true });
