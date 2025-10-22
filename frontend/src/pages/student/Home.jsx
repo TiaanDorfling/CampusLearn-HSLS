@@ -5,13 +5,13 @@ import MessagesDrawer from "../../components/messages/MessagesDrawer";
 import { getUnreadPreview } from "../../api/home";
 import StudentAssistantCard from "../../components/assistant/StudentAssistantCard.jsx";
 
+import { MessageSquare, Bell, AlertCircle, Calendar, BookOpen } from "lucide-react";
+
 // Images
 import it1 from "../../assets/it1.jpg";
 import it3 from "../../assets/it3.jpg";
 import it5 from "../../assets/it5.jpg";
 import it6 from "../../assets/it6.jpg";
-
-import { MessageSquare, Bell, AlertCircle, Calendar, BookOpen } from "lucide-react";
 
 /** Qualifications showcase */
 const coursesShowcase = [
@@ -70,7 +70,7 @@ const weeklySessions = [
   { dow: 5, subject: "Project 381 — Milestone",  code: "PRJ381", start: "15:00", end: "17:00", room: "Project Lab" },
 ];
 
-/* ===== Dummy October schedule utils ===== */
+/* ===== Dummy schedule utils ===== */
 function pad2(n){return String(n).padStart(2,"0");}
 function fmtDate(d){
   const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -140,16 +140,9 @@ export default function StudentHome(){
   const unreadCount = unread.length;
   const alertCount = unreadCount > 0 ? Math.min(unreadCount, 9) : 0;
 
-  // Group modules
-<<<<<<< HEAD
-  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});  
-  // Group events by date (for centered sections)
-  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});  
-=======
-  const grouped=modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{}); // eslint-disable-line
-  // Group events by date (for centered sections)
-  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{}); // eslint-disable-line
->>>>>>> 001ef1b82ee8a243818ce6868e540680baf6761d
+  // Group modules & events
+  const grouped = modules.reduce((acc,m)=>{(acc[m.cat] ||= []).push(m);return acc;},{});
+  const eventsByDate = monthEvents.reduce((acc,ev)=>{(acc[ev.dateKey] ||= []).push(ev);return acc;},{});
 
   return (
     <div className="min-h-screen bg-cream">
@@ -162,8 +155,10 @@ export default function StudentHome(){
               <p className="text-beige mt-1">Stay on top of your classes, messages and forum activity</p>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => nav("/app/messages")}
-                className="flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg">
+              <button
+                onClick={() => nav("/app/messages")}
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg"
+              >
                 <MessageSquare className="w-4 h-4" />
                 <span className="hidden sm:inline">Messages</span>
                 {unreadCount > 0 && (
@@ -172,8 +167,10 @@ export default function StudentHome(){
                   </span>
                 )}
               </button>
-              <button onClick={() => setDrawer(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-800 text-cream rounded-lg hover:bg-primary-900 transition font-button font-medium shadow-lg">
+              <button
+                onClick={() => setDrawer(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-800 text-cream rounded-lg hover:bg-primary-900 transition font-button font-medium shadow-lg"
+              >
                 <Bell className="w-4 h-4" />
                 <span className="hidden sm:inline">Alerts</span>
                 <span className="bg-redbrown text-cream text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -185,8 +182,7 @@ export default function StudentHome(){
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Quick Actions row — match Admin style */}
+      {/* Quick Actions row — match Admin style (includes Assistant) */}
       <div className="bg-white border-b-2 border-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-wrap gap-2">
@@ -195,25 +191,13 @@ export default function StudentHome(){
             <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
             <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
             <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
+            <QuickAction onClick={()=>nav("/app/assistant")} label="Assistant" />
           </div>
-=======
-        <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
-          <QuickAction onClick={()=>nav("/app/student/dashboard")} label="Open Dashboard" />
-          <QuickAction onClick={()=>nav("/app/messages")} label="Messages" />
-          <QuickAction onClick={()=>nav("/app/forum")} label="Forum" />
-          <QuickAction onClick={()=>nav("/app/profile")} label="Profile" />
-          <QuickAction onClick={()=>nav("/app/settings")} label="Settings" />
-          {/* NEW: Assistant quick action */}
-          <QuickAction onClick={()=>nav("/app/assistant")} label="Assistant" />
->>>>>>> 001ef1b82ee8a243818ce6868e540680baf6761d
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Error banner (Admin style) */}
-        {/* (Kept if you ever wire in error states) */}
-
         {/* Stats — same tile style as Admin */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           <StatCard icon={Calendar} color="bg-primary" label="Today’s Classes" value={todayCount} change="+0" />
@@ -226,7 +210,12 @@ export default function StudentHome(){
           <Card className="lg:col-span-2">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-heading font-bold text-primary">Student life at Belgium Campus</h3>
-              <a className="text-sm font-button text-accent hover:underline" href="https://www.youtube.com/watch?v=QPzmsQ86_HM" target="_blank" rel="noreferrer">
+              <a
+                className="text-sm font-button text-accent hover:underline"
+                href="https://www.youtube.com/watch?v=QPzmsQ86_HM"
+                target="_blank"
+                rel="noreferrer"
+              >
                 View on YouTube
               </a>
             </div>
@@ -243,7 +232,7 @@ export default function StudentHome(){
           </Card>
 
           <div className="space-y-8">
-            {/* NEW: Quick Ask Assistant card */}
+            {/* Quick Ask Assistant card */}
             <StudentAssistantCard />
 
             {nextClass && (
@@ -291,7 +280,7 @@ export default function StudentHome(){
           </div>
         </div>
 
-        {/* October Schedule — Admin card style */}
+        {/* Monthly Schedule — Admin card style */}
         <Card>
           <h3 className="text-xl font-heading font-bold text-primary text-center">October Class Schedule</h3>
           <div className="mt-4 rounded-2xl border-2 border-primary/10 p-4">
@@ -414,8 +403,10 @@ function StatCard({ icon:Icon, color, label, value, change }) {
 
 function QuickAction({label,onClick}){
   return (
-    <button onClick={onClick}
-      className="px-3 py-1.5 rounded-md border-2 border-primary/20 bg-white text-primary font-button hover:bg-lavender/20 transition shadow-sm">
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-md border-2 border-primary/20 bg-white text-primary font-button hover:bg-lavender/20 transition shadow-sm"
+    >
       {label}
     </button>
   );

@@ -1,10 +1,22 @@
+// frontend/src/pages/student/StudentDashboard.jsx
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { getCourse } from "../../api/adminapi";
 
 import {
-  Users, BookOpen, TrendingUp, AlertCircle, Calendar, CheckCircle2,
-  MessageSquare, Bell, BarChart3, UserCheck
+  Users,
+  BookOpen,
+  TrendingUp,
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  MessageSquare,
+  Bell,
+  BarChart3,
+  UserCheck,
+  ChevronRight,
+  Star,
+  Edit2,
 } from "lucide-react";
 
 export default function StudentDashboard() {
@@ -20,22 +32,12 @@ export default function StudentDashboard() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-<<<<<<< Updated upstream
   // ---------- fetch student (with fallbacks) ----------
-=======
-  // Allow proxy (/api/...) if VITE_API_URL is not provided
-  const API_BASE = import.meta.env.VITE_API_URL || "";
-  // If no API base is set, we can simulate save so UI still works
-  const USE_DEMO_SAVE = !import.meta.env.VITE_API_URL;
-
-  // ✅ Fetch student data from backend
->>>>>>> Stashed changes
   useEffect(() => {
     const fetchStudent = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-<<<<<<< Updated upstream
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         let res;
@@ -56,19 +58,16 @@ export default function StudentDashboard() {
         setStudent(s);
         setError("");
         await hydrateCourses(s);
-=======
-        const url = `${API_BASE}/api/students/me`; // if 404, try /api/student/me
-        const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStudent(res.data.student);
->>>>>>> Stashed changes
       } catch (err) {
-        console.error("Failed to load student:", err?.response?.status, err?.response?.data || err);
+        console.error(
+          "Failed to load student:",
+          err?.response?.status,
+          err?.response?.data || err
+        );
         setError(
           err?.response?.data?.message ||
-          err?.message ||
-          "Failed to load student data. Please try again."
+            err?.message ||
+            "Failed to load student data. Please try again."
         );
       } finally {
         setLoading(false);
@@ -93,7 +92,7 @@ export default function StudentDashboard() {
 
         const normalized = fullCourses.map((c) => ({
           ...c,
-          title: c.title || c.name || c.code || "Course",
+          title: c?.title || c?.name || c?.code || "Course",
         }));
 
         setEnrolledCourses(normalized.filter(Boolean));
@@ -103,7 +102,7 @@ export default function StudentDashboard() {
     };
 
     fetchStudent();
-  }, [API_BASE]);
+  }, []);
 
   // ---------- profile form ----------
   const [form, setForm] = useState({
@@ -126,32 +125,12 @@ export default function StudentDashboard() {
     }
   }, [student]);
 
-  // ✅ Single onSave with real call + demo fallback (no duplicate definitions)
+  // ✅ save profile (single definition, uses shared api with fallbacks)
   const onSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (USE_DEMO_SAVE) {
-        // Simulate save so UI doesn’t block development
-        await new Promise((r) => setTimeout(r, 800));
-        // Optimistically update local student so UI reflects changes
-        setStudent((prev) => prev ? {
-          ...prev,
-          phone: form.phone,
-          year: form.year,
-          about: form.about,
-          emergencyContact: {
-            ...(prev.emergencyContact || {}),
-            name: form.emergencyContactName,
-            phone: form.emergencyContactPhone,
-          },
-        } : prev);
-        alert("Profile updated (demo). Configure VITE_API_URL to use the API.");
-        return;
-      }
-
       const token = localStorage.getItem("token");
-<<<<<<< Updated upstream
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const body = {
         phone: form.phone,
@@ -180,36 +159,12 @@ export default function StudentDashboard() {
         },
       }));
 
-=======
-      if (!token) throw new Error("No auth token found");
-
-      const url = `${API_BASE}/api/students/me`; // if 404, switch to /api/student/me
-      const { data } = await axios.put(url, form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // If backend returns updated student, use it; else merge locally
-      if (data?.student) {
-        setStudent(data.student);
-      } else {
-        setStudent((prev) => prev ? {
-          ...prev,
-          phone: form.phone,
-          year: form.year,
-          about: form.about,
-          emergencyContact: {
-            ...(prev.emergencyContact || {}),
-            name: form.emergencyContactName,
-            phone: form.emergencyContactPhone,
-          },
-        } : prev);
-      }
-
->>>>>>> Stashed changes
       alert("Profile updated successfully!");
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.message || err?.message || "Failed to update profile");
+      setError(
+        err?.response?.data?.message || err?.message || "Failed to update profile"
+      );
     } finally {
       setSaving(false);
     }
@@ -217,31 +172,33 @@ export default function StudentDashboard() {
 
   // guards
   if (loading) return <div className="p-10 text-center">Loading student data...</div>;
-  if (error)   return <div className="p-10 text-redbrown text-center">{error}</div>;
+  if (error) return <div className="p-10 text-redbrown text-center">{error}</div>;
   if (!student) return <div className="p-10 text-center">No student found.</div>;
 
-<<<<<<< Updated upstream
   // ---------- demo content for overview (styled like admin) ----------
   const upcomingTasks = [
-    { id: 1, task: "Finish React assignment", deadline: "Today",    priority: "high"   },
-    { id: 2, task: "Prep for DB midterm",     deadline: "Tomorrow", priority: "medium" },
-    { id: 3, task: "Group project sync",      deadline: "Fri",      priority: "low"    },
+    { id: 1, task: "Finish React assignment", deadline: "Today", priority: "high" },
+    { id: 2, task: "Prep for DB midterm", deadline: "Tomorrow", priority: "medium" },
+    { id: 3, task: "Group project sync", deadline: "Fri", priority: "low" },
   ];
   const systemAlerts = [
     { id: 1, type: "warning", message: "3 assignments due this week", priority: "medium" },
-    { id: 2, type: "info",    message: "Lab slots updated for Thursday", priority: "low" },
-    { id: 3, type: "error",   message: "One course missing materials", priority: "high" },
+    { id: 2, type: "info", message: "Lab slots updated for Thursday", priority: "low" },
+    { id: 3, type: "error", message: "One course missing materials", priority: "high" },
   ];
-
   const recentActivity = [
-    { id: 1, type: "assignment", user: "You", action: "submitted Project 1 (Web Dev)", time: "2 hours ago" },
-    { id: 2, type: "grade",      user: "Lecturer", action: "graded Database Quiz 2",   time: "Yesterday" },
-    { id: 3, type: "course",     user: "You", action: "joined SEN381 group",          time: "2 days ago" },
-    { id: 4, type: "meeting",    user: "You", action: "booked tutor session",         time: "3 days ago" },
+    {
+      id: 1,
+      type: "assignment",
+      user: "You",
+      action: "submitted Project 1 (Web Dev)",
+      time: "2 hours ago",
+    },
+    { id: 2, type: "grade", user: "Lecturer", action: "graded Database Quiz 2", time: "Yesterday" },
+    { id: 3, type: "course", user: "You", action: "joined SEN381 group", time: "2 days ago" },
+    { id: 4, type: "meeting", user: "You", action: "booked tutor session", time: "3 days ago" },
   ];
 
-=======
->>>>>>> Stashed changes
   const schedule = [
     { day: "Mon", start: "09:00", end: "10:30", title: "SEN381", location: "B201", color: "bg-accent" },
     { day: "Tue", start: "11:00", end: "12:30", title: "PRG381", location: "C105", color: "bg-lavender" },
@@ -251,33 +208,47 @@ export default function StudentDashboard() {
   ];
 
   const marks = [
-    { code: "SEN381", name: "Software Engineering", overall: 78, terms: [
-      { label: "Test 1", score: 75 }, { label: "Assignment", score: 82 }, { label: "Project", score: 80 }
-    ]},
-    { code: "PRG381", name: "Programming 3", overall: 66, terms: [
-      { label: "Test 1", score: 60 }, { label: "Lab", score: 72 }, { label: "Project", score: 65 }
-    ]},
-    { code: "DBD382", name: "Databases", overall: 85, terms: [
-      { label: "Test 1", score: 88 }, { label: "Assignment", score: 84 }, { label: "Project", score: 83 }
-    ]},
+    {
+      code: "SEN381",
+      name: "Software Engineering",
+      overall: 78,
+      terms: [
+        { label: "Test 1", score: 75 },
+        { label: "Assignment", score: 82 },
+        { label: "Project", score: 80 },
+      ],
+    },
+    {
+      code: "PRG381",
+      name: "Programming 3",
+      overall: 66,
+      terms: [
+        { label: "Test 1", score: 60 },
+        { label: "Lab", score: 72 },
+        { label: "Project", score: 65 },
+      ],
+    },
+    {
+      code: "DBD382",
+      name: "Databases",
+      overall: 85,
+      terms: [
+        { label: "Test 1", score: 88 },
+        { label: "Assignment", score: 84 },
+        { label: "Project", score: 83 },
+      ],
+    },
   ];
 
-  const courseCount = enrolledCourses?.length || student?.courses?.length || 0;
-
-  const courseCount = Array.isArray(student.courses) ? student.courses.length : 0;
+  const courseCount =
+    (Array.isArray(enrolledCourses) && enrolledCourses.length) ||
+    (Array.isArray(student?.courses) ? student.courses.length : 0);
 
   const stats = [
-<<<<<<< Updated upstream
-    { label: "Enrolled Courses", value: courseCount, icon: BookOpen,     color: "bg-primary",   change: "+1"  },
-    { label: "Avg Grade",        value: "B+",        icon: TrendingUp,   color: "bg-accent",    change: "—"   },
-    { label: "Upcoming Events",  value: "3",         icon: Calendar,     color: "bg-lavender",  change: "+2"  },
-    { label: "Completed Tasks",  value: "12/15",     icon: CheckCircle2, color: "bg-redbrown",  change: "+3"  },
-=======
-    { label: "Current Courses", value: courseCount, icon: BookOpen, color: "from-blue-500 to-blue-600", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
-    { label: "Average Grade", value: "B+", icon: TrendingUp, color: "from-green-500 to-green-600", iconBg: "bg-green-100", iconColor: "text-green-600" },
-    { label: "Upcoming Events", value: upcomingEvents.length, icon: Calendar, color: "from-purple-500 to-purple-600", iconBg: "bg-purple-100", iconColor: "text-purple-600" },
-    { label: "Completed Tasks", value: "12/15", icon: CheckCircle2, color: "from-orange-500 to-orange-600", iconBg: "bg-orange-100", iconColor: "text-orange-600" },
->>>>>>> Stashed changes
+    { label: "Enrolled Courses", value: courseCount, icon: BookOpen, color: "bg-primary", change: "+1" },
+    { label: "Avg Grade", value: "B+", icon: TrendingUp, color: "bg-accent", change: "—" },
+    { label: "Upcoming Events", value: "3", icon: Calendar, color: "bg-lavender", change: "+2" },
+    { label: "Completed Tasks", value: "12/15", icon: CheckCircle2, color: "bg-redbrown", change: "+3" },
   ];
 
   return (
@@ -291,8 +262,7 @@ export default function StudentDashboard() {
               <p className="text-beige mt-1">Welcome back, {student?.name?.split(" ")[0]}!</p>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                className="flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg">
+              <button className="flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg">
                 <MessageSquare className="w-4 h-4" />
                 <span className="hidden sm:inline">Messages</span>
               </button>
@@ -300,7 +270,7 @@ export default function StudentDashboard() {
                 <Bell className="w-4 h-4" />
                 <span className="hidden sm:inline">Alerts</span>
                 <span className="bg-redbrown text-cream text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {systemAlerts.filter(a => a.priority === "high").length}
+                  {systemAlerts.filter((a) => a.priority === "high").length}
                 </span>
               </button>
             </div>
@@ -314,16 +284,20 @@ export default function StudentDashboard() {
           <div className="flex gap-1 overflow-x-auto">
             {[
               { id: "overview", label: "Overview", icon: BarChart3 },
-              { id: "courses",  label: "My Courses", icon: BookOpen },
+              { id: "courses", label: "My Courses", icon: BookOpen },
               { id: "schedule", label: "Schedule", icon: Calendar },
-              { id: "grades",   label: "Grades",   icon: TrendingUp },
-              { id: "profile",  label: "Profile",  icon: Users },
-            ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveView(tab.id)}
+              { id: "grades", label: "Grades", icon: TrendingUp },
+              { id: "profile", label: "Profile", icon: Users },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveView(tab.id)}
                 className={`flex items-center gap-2 px-6 py-4 font-button font-medium transition border-b-4 ${
-                  activeView === tab.id ? "border-accent text-primary bg-lavender/10"
-                                        : "border-transparent text-primary-800 hover:bg-lavender/5"
-                }`}>
+                  activeView === tab.id
+                    ? "border-accent text-primary bg-lavender/10"
+                    : "border-transparent text-primary-800 hover:bg-lavender/5"
+                }`}
+              >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
               </button>
@@ -333,35 +307,29 @@ export default function StudentDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Error banner */}
-        {error && (
-          <div className="mb-6 rounded-lg border-2 border-redbrown/60 p-4 text-sm text-redbrown bg-cream flex items-start justify-between gap-3 shadow-md">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-            <button onClick={() => window.location.reload()}
-              className="px-3 py-1.5 rounded-md bg-redbrown text-cream font-button hover:bg-redbrown/90">
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* OVERVIEW (mirrors admin sections) */}
+        {/* OVERVIEW */}
         {activeView === "overview" && (
           <div className="space-y-8">
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10 hover:border-primary/30 transition">
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10 hover:border-primary/30 transition"
+                >
                   <div className="flex items-center justify-between mb-4">
                     <div className={`${stat.color} p-3 rounded-lg shadow-md`}>
                       <stat.icon className="w-6 h-6 text-cream" />
                     </div>
-                    <span className={`text-xs font-button font-bold px-2 py-1 rounded-full ${
-                      String(stat.change).startsWith("+") || stat.change === "—"
-                        ? "bg-accent/20 text-accent" : "bg-redbrown/20 text-redbrown"
-                    }`}>{stat.change}</span>
+                    <span
+                      className={`text-xs font-button font-bold px-2 py-1 rounded-full ${
+                        String(stat.change).startsWith("+") || stat.change === "—"
+                          ? "bg-accent/20 text-accent"
+                          : "bg-redbrown/20 text-redbrown"
+                      }`}
+                    >
+                      {stat.change}
+                    </span>
                   </div>
                   <p className="text-primary-800 text-sm font-medium font-sans">{stat.label}</p>
                   <p className="text-3xl font-heading font-bold text-primary mt-1">{stat.value}</p>
@@ -378,30 +346,44 @@ export default function StudentDashboard() {
                     <AlertCircle className="w-5 h-5" /> System Alerts
                   </h2>
                   <div className="space-y-3">
-                    {systemAlerts.map(alert => (
-                      <div key={alert.id}
+                    {systemAlerts.map((alert) => (
+                      <div
+                        key={alert.id}
                         className={`p-4 rounded-lg border-l-4 ${
-                          alert.priority === "high" ? "bg-redbrown/10 border-redbrown"
-                            : alert.priority === "medium" ? "bg-accent/10 border-accent"
+                          alert.priority === "high"
+                            ? "bg-redbrown/10 border-redbrown"
+                            : alert.priority === "medium"
+                            ? "bg-accent/10 border-accent"
                             : "bg-lavender/10 border-lavender"
-                        }`}>
+                        }`}
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             <span className="text-2xl">
-                              {alert.type === "error" ? "🚨" : alert.type === "warning" ? "⚠️" : "ℹ️"}
+                              {alert.type === "error"
+                                ? "🚨"
+                                : alert.type === "warning"
+                                ? "⚠️"
+                                : "ℹ️"}
                             </span>
                             <div>
                               <p className="font-heading font-medium text-primary">{alert.message}</p>
-                              <span className={`text-xs font-button font-bold mt-1 inline-block px-2 py-0.5 rounded-full ${
-                                alert.priority === "high" ? "bg-redbrown text-cream"
-                                  : alert.priority === "medium" ? "bg-accent text-primary-900"
-                                  : "bg-lavender text-primary-900"
-                              }`}>
+                              <span
+                                className={`text-xs font-button font-bold mt-1 inline-block px-2 py-0.5 rounded-full ${
+                                  alert.priority === "high"
+                                    ? "bg-redbrown text-cream"
+                                    : alert.priority === "medium"
+                                    ? "bg-accent text-primary-900"
+                                    : "bg-lavender text-primary-900"
+                                }`}
+                              >
                                 {alert.priority.toUpperCase()}
                               </span>
                             </div>
                           </div>
-                          <button className="text-primary hover:text-accent font-button text-sm font-medium">Dismiss</button>
+                          <button className="text-primary hover:text-accent font-button text-sm font-medium">
+                            Dismiss
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -414,14 +396,19 @@ export default function StudentDashboard() {
                     <Calendar className="w-5 h-5" /> Recent Activity
                   </h2>
                   <div className="space-y-3">
-                    {recentActivity.map(a => (
+                    {recentActivity.map((a) => (
                       <div key={a.id} className="flex items-start gap-4 p-3 bg-cream/50 rounded-lg">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                          a.type === "assignment" ? "bg-accent/20"
-                            : a.type === "grade" ? "bg-primary/20"
-                            : a.type === "course" ? "bg-lavender/20"
-                            : "bg-redbrown/20"
-                        }`}>
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                            a.type === "assignment"
+                              ? "bg-accent/20"
+                              : a.type === "grade"
+                              ? "bg-primary/20"
+                              : a.type === "course"
+                              ? "bg-lavender/20"
+                              : "bg-redbrown/20"
+                          }`}
+                        >
                           {a.type === "assignment" ? "📄" : a.type === "grade" ? "⭐" : a.type === "course" ? "📘" : "👥"}
                         </div>
                         <div className="flex-1">
@@ -442,16 +429,22 @@ export default function StudentDashboard() {
                 <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
                   <h2 className="text-lg font-heading font-bold text-primary mb-4">Quick Actions</h2>
                   <div className="space-y-2">
-                    <button onClick={() => setActiveView("courses")}
-                      className="w-full px-4 py-3 bg-primary text-cream rounded-lg hover:bg-primary-800 transition font-button font-medium text-left flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveView("courses")}
+                      className="w-full px-4 py-3 bg-primary text-cream rounded-lg hover:bg-primary-800 transition font-button font-medium text-left flex items-center gap-2"
+                    >
                       <BookOpen className="w-4 h-4" /> View My Courses
                     </button>
-                    <button onClick={() => setActiveView("schedule")}
-                      className="w-full px-4 py-3 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium text-left flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveView("schedule")}
+                      className="w-full px-4 py-3 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium text-left flex items-center gap-2"
+                    >
                       <Calendar className="w-4 h-4" /> View Schedule
                     </button>
-                    <button onClick={() => setActiveView("profile")}
-                      className="w-full px-4 py-3 bg-lavender text-primary-900 rounded-lg hover:bg-lavender/90 transition font-button font-medium text-left flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveView("profile")}
+                      className="w-full px-4 py-3 bg-lavender text-primary-900 rounded-lg hover:bg-lavender/90 transition font-button font-medium text-left flex items-center gap-2"
+                    >
                       <Users className="w-4 h-4" /> Edit Profile
                     </button>
                   </div>
@@ -463,15 +456,19 @@ export default function StudentDashboard() {
                     <UserCheck className="w-5 h-5" /> Upcoming Tasks
                   </h2>
                   <div className="space-y-3">
-                    {upcomingTasks.map(task => (
+                    {upcomingTasks.map((task) => (
                       <div key={task.id} className="p-3 bg-cream/50 rounded-lg border-l-4 border-accent">
                         <div className="flex items-start justify-between mb-1">
                           <p className="font-heading font-medium text-sm text-primary">{task.task}</p>
-                          <span className={`text-xs font-button font-bold px-2 py-0.5 rounded-full ${
-                            task.priority === "high" ? "bg-redbrown text-cream"
-                              : task.priority === "medium" ? "bg-accent text-primary-900"
-                              : "bg-lavender text-primary-900"
-                          }`}>
+                          <span
+                            className={`text-xs font-button font-bold px-2 py-0.5 rounded-full ${
+                              task.priority === "high"
+                                ? "bg-redbrown text-cream"
+                                : task.priority === "medium"
+                                ? "bg-accent text-primary-900"
+                                : "bg-lavender text-primary-900"
+                            }`}
+                          >
                             {task.priority}
                           </span>
                         </div>
@@ -506,18 +503,23 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* This Week's Schedule (as card like admin) */}
+            {/* This Week's Schedule */}
             <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
               <h2 className="text-xl font-heading font-bold text-primary mb-6 flex items-center gap-2">
                 <Calendar className="w-5 h-5" /> This Week's Schedule
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {schedule.map((item, idx) => (
-                  <div key={idx} className="p-4 bg-cream/60 rounded-lg border-2 border-primary/10 hover:border-accent transition">
+                  <div
+                    key={idx}
+                    className="p-4 bg-cream/60 rounded-lg border-2 border-primary/10 hover:border-accent transition"
+                  >
                     <p className="text-xs font-bold text-primary-800 mb-2">{item.day}</p>
-                    <div className={`w-full h-1 ${item.color} rounded-full mb-2`}></div>
+                    <div className={`w-full h-1 ${item.color} rounded-full mb-2`} />
                     <p className="font-heading font-semibold text-primary text-sm mb-1">{item.title}</p>
-                    <p className="text-xs text-primary-800">{item.start} - {item.end}</p>
+                    <p className="text-xs text-primary-800">
+                      {item.start} - {item.end}
+                    </p>
                     <p className="text-xs text-primary-800/70 mt-1">{item.location}</p>
                   </div>
                 ))}
@@ -526,43 +528,21 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* COURSES (table like admin Courses) */}
+        {/* COURSES */}
         {activeView === "courses" && (
           <div className="space-y-6">
-<<<<<<< Updated upstream
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <h2 className="text-2xl font-heading font-bold text-primary">My Courses</h2>
                 <p className="text-primary-800 font-sans text-sm">Total: {courseCount} courses</p>
               </div>
-=======
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.isArray(student.courses) && student.courses.map((course) => (
-                <div key={course._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group cursor-pointer">
-                  <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-black/20"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BookOpen className="w-12 h-12 text-white opacity-80" />
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition">{course.code}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{course.name}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">View Details</span>
-                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                </div>
-              ))}
->>>>>>> Stashed changes
             </div>
 
             {coursesLoading ? (
               <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
                 Loading your courses…
               </div>
-            ) : (enrolledCourses && enrolledCourses.length) ? (
+            ) : enrolledCourses && enrolledCourses.length ? (
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-primary/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm font-sans">
@@ -573,16 +553,28 @@ export default function StudentDashboard() {
                         <th className="py-4 px-4 text-left font-heading font-semibold text-primary">Year</th>
                         <th className="py-4 px-4 text-left font-heading font-semibold text-primary">Semester</th>
                         <th className="py-4 px-4 text-left font-heading font-semibold text-primary">Tutors</th>
+                        <th className="py-4 px-4 text-left font-heading font-semibold text-primary w-28">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {enrolledCourses.map((c) => (
-                        <tr key={c._id || c.id} className="border-b border-primary/10 hover:bg-lavender/5 transition">
+                        <tr
+                          key={c._id || c.id}
+                          className="border-b border-primary/10 hover:bg-lavender/5 transition"
+                        >
                           <td className="py-3 px-4 text-primary-800">{c.code || "—"}</td>
                           <td className="py-3 px-4 text-primary-800">{c.title || c.name || "—"}</td>
                           <td className="py-3 px-4 text-primary-800">{c.year || "—"}</td>
                           <td className="py-3 px-4 text-primary-800">{c.semester || "—"}</td>
-                          <td className="py-3 px-4 text-primary-800">{Array.isArray(c.tutors) ? c.tutors.length : 0}</td>
+                          <td className="py-3 px-4 text-primary-800">
+                            {Array.isArray(c.tutors) ? c.tutors.length : 0}
+                          </td>
+                          <td className="py-3 px-4">
+                            <button className="p-2 rounded-lg border-2 border-primary/30 hover:bg-lavender/20 transition text-primary flex items-center gap-1">
+                              <Edit2 className="w-4 h-4" />
+                              <span className="text-xs font-button">View</span>
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -597,7 +589,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* SCHEDULE (table card like admin) */}
+        {/* SCHEDULE */}
         {activeView === "schedule" && (
           <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-primary/10">
             <h2 className="text-2xl font-heading font-bold text-primary mb-6">Weekly Schedule</h2>
@@ -615,7 +607,9 @@ export default function StudentDashboard() {
                   {schedule.map((item, idx) => (
                     <tr key={idx} className="border-b border-primary/10 hover:bg-lavender/5 transition">
                       <td className="py-4 px-4 text-primary-800 font-medium">{item.day}</td>
-                      <td className="py-4 px-4 text-primary-800">{item.start} - {item.end}</td>
+                      <td className="py-4 px-4 text-primary-800">
+                        {item.start} - {item.end}
+                      </td>
                       <td className="py-4 px-4 text-primary-800">{item.title}</td>
                       <td className="py-4 px-4 text-primary-800">{item.location}</td>
                     </tr>
@@ -626,23 +620,31 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* GRADES (cards styled like admin content) */}
+        {/* GRADES */}
         {activeView === "grades" && (
           <div className="space-y-6">
             {marks.map((course) => (
-              <div key={course.code} className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
+              <div
+                key={course.code}
+                className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10"
+              >
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-xl font-heading font-bold text-primary">{course.code}</h3>
                     <p className="text-primary-800 font-sans text-sm">{course.name}</p>
                   </div>
                   <div className="text-right">
-                    <div className={`text-4xl font-heading font-bold ${
-                      course.overall >= 80 ? 'text-accent'
-                        : course.overall >= 70 ? 'text-primary'
-                        : course.overall >= 60 ? 'text-redbrown'
-                        : 'text-primary-800'
-                    }`}>
+                    <div
+                      className={`text-4xl font-heading font-bold ${
+                        course.overall >= 80
+                          ? "text-accent"
+                          : course.overall >= 70
+                          ? "text-primary"
+                          : course.overall >= 60
+                          ? "text-redbrown"
+                          : "text-primary-800"
+                      }`}
+                    >
                       {course.overall}%
                     </div>
                     <p className="text-xs text-primary-800/70">Overall</p>
@@ -650,7 +652,10 @@ export default function StudentDashboard() {
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   {course.terms.map((term, i) => (
-                    <div key={i} className="p-4 bg-cream/60 rounded-lg border-2 border-primary/10 text-center">
+                    <div
+                      key={i}
+                      className="p-4 bg-cream/60 rounded-lg border-2 border-primary/10 text-center"
+                    >
                       <p className="text-xs text-primary-800/80 mb-2">{term.label}</p>
                       <p className="text-2xl font-heading font-bold text-primary">{term.score}%</p>
                     </div>
@@ -661,7 +666,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* PROFILE (cards and form styled like admin) */}
+        {/* PROFILE */}
         {activeView === "profile" && (
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
@@ -686,48 +691,33 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            <form onSubmit={onSave} className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10">
+            <form
+              onSubmit={onSave}
+              className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 border-2 border-primary/10"
+            >
               <h3 className="text-lg font-heading font-bold text-primary mb-6">Edit Profile</h3>
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <label className="block">
-<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Phone</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
-=======
-                  <span className="text-sm font-medium text-gray-700 mb-1 block">Phone</span>
-                  <input
-                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
->>>>>>> Stashed changes
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   />
                 </label>
                 <label className="block">
-<<<<<<< Updated upstream
                   <span className="text-sm font-heading text-primary mb-1 block">Year</span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
-=======
-                  <span className="text-sm font-medium text-gray-700 mb-1 block">Year</span>
-                  <input
-                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
->>>>>>> Stashed changes
                     value={form.year}
                     onChange={(e) => setForm({ ...form, year: e.target.value })}
                   />
                 </label>
               </div>
               <label className="block mb-4">
-<<<<<<< Updated upstream
                 <span className="text-sm font-heading text-primary mb-1 block">About</span>
                 <textarea
                   className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
-=======
-                <span className="text-sm font-medium text-gray-700 mb-1 block">About</span>
-                <textarea
-                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
->>>>>>> Stashed changes
                   rows="3"
                   value={form.about}
                   onChange={(e) => setForm({ ...form, about: e.target.value })}
@@ -735,40 +725,28 @@ export default function StudentDashboard() {
               </label>
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <label className="block">
-<<<<<<< Updated upstream
-                  <span className="text-sm font-heading text-primary mb-1 block">Emergency Contact Name</span>
+                  <span className="text-sm font-heading text-primary mb-1 block">
+                    Emergency Contact Name
+                  </span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
-=======
-                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Name</span>
-                  <input
-                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
->>>>>>> Stashed changes
                     value={form.emergencyContactName}
                     onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
                   />
                 </label>
                 <label className="block">
-<<<<<<< Updated upstream
-                  <span className="text-sm font-heading text-primary mb-1 block">Emergency Contact Phone</span>
+                  <span className="text-sm font-heading text-primary mb-1 block">
+                    Emergency Contact Phone
+                  </span>
                   <input
                     className="w-full rounded-lg border-2 border-primary/30 px-4 py-2 font-sans focus:ring-2 focus:ring-accent focus:border-accent"
-=======
-                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Phone</span>
-                  <input
-                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
->>>>>>> Stashed changes
                     value={form.emergencyContactPhone}
                     onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
                   />
                 </label>
               </div>
               <button
-<<<<<<< Updated upstream
                 className="px-6 py-2 rounded-lg bg-primary text-cream font-button font-medium hover:bg-primary-800 transition shadow-md disabled:opacity-60"
-=======
-                className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60"
->>>>>>> Stashed changes
                 disabled={saving}
               >
                 {saving ? "Saving..." : "Save Changes"}
