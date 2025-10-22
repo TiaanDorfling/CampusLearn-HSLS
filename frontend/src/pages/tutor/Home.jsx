@@ -125,7 +125,7 @@ export default function TutorHome() {
     </p>
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <a
-        href="https://www.youtube.com/watch?v=KjK0dK3V2uk"
+        href="https://www.google.com/search?sca_esv=514c60beb9213ab0&rlz=1C5CHFA_enZA1046ZA1046&sxsrf=AE3TifNu6epyJlY9nkZYH0DoS6eaY6cg2Q:1761164031440&udm=7&fbs=AIIjpHxU7SXXniUZfeShr2fp4giZud1z6kQpMfoEdCJxnpm_3YlUqOpj4OTU_HmqxOd8LCZRmCXZfilaEd7O0OWEblYuNA8KmxQaFtAUVBSc6CSsPE847cxUbHj0gZ4UF6TazPdWcpwZbrIx3VY12G-19H9tv1KseZFih8bYmsbyKIG72B2pTOopPlWA0DqRLaSFpeMEJRbU98h5VxjHpfPOQqcu_UrttQ&q=how+to+tutor+online&sa=X&ved=2ahUKEwj6yfCjz7iQAxUmVkEAHUPKJZoQtKgLegQIMxAB&biw=1440&bih=812&dpr=2#fpstate=ive&vld=cid:8b1e4871,vid:dTHhV1Cw-SA,st:0"
         target="_blank"
         rel="noopener noreferrer"
         className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
@@ -135,7 +135,7 @@ export default function TutorHome() {
       </a>
 
       <a
-        href="https://www.youtube.com/watch?v=Rk5FjBRbKzA"
+        href="https://www.google.com/search?sca_esv=514c60beb9213ab0&rlz=1C5CHFA_enZA1046ZA1046&sxsrf=AE3TifNu6epyJlY9nkZYH0DoS6eaY6cg2Q:1761164031440&udm=7&fbs=AIIjpHxU7SXXniUZfeShr2fp4giZud1z6kQpMfoEdCJxnpm_3YlUqOpj4OTU_HmqxOd8LCZRmCXZfilaEd7O0OWEblYuNA8KmxQaFtAUVBSc6CSsPE847cxUbHj0gZ4UF6TazPdWcpwZbrIx3VY12G-19H9tv1KseZFih8bYmsbyKIG72B2pTOopPlWA0DqRLaSFpeMEJRbU98h5VxjHpfPOQqcu_UrttQ&q=how+to+tutor+online&sa=X&ved=2ahUKEwj6yfCjz7iQAxUmVkEAHUPKJZoQtKgLegQIMxAB&biw=1440&bih=812&dpr=2#fpstate=ive&vld=cid:90992817,vid:X1aokT2yHrI,st:0"
         target="_blank"
         rel="noopener noreferrer"
         className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
@@ -145,7 +145,7 @@ export default function TutorHome() {
       </a>
 
       <a
-        href="https://www.youtube.com/watch?v=H6n3p1XjGG0"
+        href="https://www.google.com/search?q=ymca+song&sca_esv=514c60beb9213ab0&rlz=1C5CHFA_enZA1046ZA1046&udm=7&biw=1440&bih=812&sxsrf=AE3TifNEBwNfacNh7SDngrv2h6RP_O0jMQ%3A1761164035090&ei=Azv5aKaeBdqmhbIP1Z-NoQo&oq=YMCH&gs_lp=EhZnd3Mtd2l6LW1vZGVsZXNzLXZpZGVvIgRZTUNIKgIIATIKEAAYgAQYChixAzIHEAAYgAQYCjIHEAAYgAQYCjIHEAAYgAQYCjIHEAAYgAQYCjIHEAAYgAQYCjIHEAAYgAQYCjIFEAAYgAQyBRAAGIAEMgcQABiABBgKSN4tUIkOWIcbcAF4AJABAJgB6gSgAe8LqgEJMi0yLjEuMC4xuAEByAEA-AEBmAIFoAKWDKgCCsICBxAjGOoCGCfCAgQQIxgnwgILEAAYgAQYsQMYgwHCAhEQABiABBiKBRiRAhixAxiDAcICDRAAGIAEGIoFGEMYsQPCAhAQABiABBiKBRhDGLEDGIMBwgILEAAYgAQYigUYhgOYAwySBwsxLjAuMi4xLjAuMaAH3RWyBwkyLTIuMS4wLjG4B4kMwgcFMi00LjHIByA&sclient=gws-wiz-modeless-video#fpstate=ive&vld=cid:9d510c22,vid:CS9OO0S5w2k,st:0"
         target="_blank"
         rel="noopener noreferrer"
         className="block rounded-xl border border-primary/20 bg-white hover:bg-cream/60 transition p-3 shadow-sm"
@@ -192,49 +192,10 @@ export default function TutorHome() {
             </Card>
           )}
 
-          {/* Recent student messages */}
-          {unread.length > 0 && (
-            <Card>
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Recent student messages</h3>
-                <button className="text-sm underline" onClick={() => nav("/app/messages")}>
-                  View all
-                </button>
-              </div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {unread.map((m) => (
-                  <li
-                    key={m._id}
-                    className="rounded-lg border p-3 hover:bg-cream/50 transition"
-                  >
-                    <div className="font-medium">{m.senderName || "Student"}</div>
-                    <div className="text-primary/60">{m.subject || m.body?.slice(0, 60)}</div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
+         
         </div>
 
-        {/* Right column: weekly schedule */}
-        {schedule.length > 0 && (
-          <div className="lg:col-span-2">
-            <Card>
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">This Week’s Teaching Schedule</h3>
-                <button
-                  className="text-sm underline"
-                  onClick={() => nav("/app/tutor/dashboard")}
-                >
-                  Open full schedule
-                </button>
-              </div>
-              <div className="mt-3">
-                <ScheduleTable events={schedule} startHour={8} endHour={18} />
-              </div>
-            </Card>
-          </div>
-        )}
+       
       </section>
 
       <MessagesDrawer open={drawer} onClose={() => setDrawer(false)} />
