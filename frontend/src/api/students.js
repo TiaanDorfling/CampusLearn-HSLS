@@ -4,11 +4,10 @@ import api from "./axios";
 /** Student (self) */
 export async function getMyStudent() {
   const { data } = await api.get("/student/me");
-  console.log(data);
   return data; // { student, courses?, stats? }
 }
 export async function updateMyStudent(patch) {
-  const { data } = await api.patch("/student/me", patch);
+  const { data } = await api.put("/student/me", patch);
   return data; // { student }
 }
 
@@ -27,7 +26,7 @@ export async function createStudent(payload) {
   return data; // { student }
 }
 export async function updateStudent(id, patch) {
-  const { data } = await api.patch(`/student/${id}`, patch);
+  const { data } = await api.put(`/student/${id}`, patch);
   return data; // { student }
 }
 export async function deleteStudent(id) {
