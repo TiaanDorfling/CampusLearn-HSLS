@@ -45,7 +45,14 @@ export default function StudentHome() {
   return (
     <div className="space-y-6">
       {/* HERO */}
-      <section className="rounded-2xl p-6 md:p-8 bg-linear-to-r from-lavender/60 via-cream/70 to-white border border-primary/10 shadow-sm">
+      <section
+        className="
+          rounded-2xl p-6 md:p-8
+          bg-white
+          border border-primary/10 shadow-sm
+          bg-[linear-gradient(90deg,rgba(185,174,229,0.6),rgba(255,243,224,0.7),white)]
+        "
+      >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-heading text-primary">Welcome back 👋</h1>
@@ -67,7 +74,8 @@ export default function StudentHome() {
           <QuickAction onClick={() => nav("/app/student/dashboard")} label="Open Dashboard" />
           <QuickAction onClick={() => nav("/app/messages")} label="Messages" />
           <QuickAction onClick={() => nav("/app/forum")} label="Forum" />
-          {/* Removed: <QuickAction onClick={() => setDrawer(true)} label="New messages" /> */}
+          <QuickAction onClick={() => nav("/app/profile")} label="Profile" />
+          <QuickAction onClick={() => nav("/app/settings")} label="Settings" />
         </div>
       </section>
 
