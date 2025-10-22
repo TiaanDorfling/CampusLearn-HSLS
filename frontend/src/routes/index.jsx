@@ -48,10 +48,8 @@ import Settings from "../pages/Settings.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import SignOut from "../pages/SignOut.jsx";
 
-// Assistant (AI Chat)
 import Assistant from "../pages/assistant/Assistant.jsx";
 
-/* ---------- Helpers ---------- */
 function getLocalAuth() {
   try { return JSON.parse(localStorage.getItem("cl_auth") || "null"); } catch { return null; }
 }
@@ -71,7 +69,7 @@ function PrivateIndex() {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ---------- Public Area ---------- */}
+      {/*  Public Area  */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/courses" element={<Courses />} />
@@ -80,7 +78,7 @@ export default function AppRoutes() {
         <Route path="/auth/register" element={<PublicOnly><SignUp /></PublicOnly>} />
       </Route>
 
-      {/* ---------- Private Area (/app/*) ---------- */}
+      {/*  Private Area (/app/*)  */}
       <Route
         path="/app"
         element={
@@ -133,6 +131,11 @@ export default function AppRoutes() {
         {/* Sign out */}
         <Route path="signout" element={<SignOut />} />
 
+        {/* NEW: Tutor-only alias so /app/dashboard opens TutorDashboard for tutors */}
+        <Route element={<RoleGuard allow={["tutor"]} />}>
+          <Route path="dashboard" element={<TutorDashboard />} />
+        </Route>
+
         {/* Aliases */}
         <Route path="home" element={<PrivateIndex />} />
         <Route path="dashboard" element={<PrivateIndex />} />
@@ -144,7 +147,7 @@ export default function AppRoutes() {
       <Route path="/dashboard" element={<Navigate to="/app" replace />} />
       <Route path="/home" element={<Navigate to="/app" replace />} />
 
-      {/* ---------- Fallback ---------- */}
+      {/* Fallback */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
