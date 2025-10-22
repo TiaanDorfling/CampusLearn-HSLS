@@ -1,5 +1,6 @@
 // Simple front-end wrappers you’ll wire to your backend later.
 
+
 export async function getStudentHome() {
   // expect the backend to return:
   // { nextClass: {...} | null, schedule: [...], unread: { items: [...] } }
@@ -10,7 +11,7 @@ export async function getStudentHome() {
 
 // Fallbacks you can use if you prefer separate endpoints:
 export async function getMySchedule() {
-  const r = await fetch("/api/schedule", { credentials: "include" });
+  const r = await fetch("/api/calendar", { credentials: "include" });
   if (!r.ok) throw new Error("Failed to load schedule");
   return r.json(); // { events: [...] }
 }
