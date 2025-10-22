@@ -1,24 +1,38 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import BackHomeButton from "../../components/BackHomeButton.jsx";
-import AvatarPicker from "../../components/profile/AvatarPicker.jsx";
-import ScheduleTable from "../../components/schedule/ScheduleTable.jsx";
-import MarksGrid from "../../components/marks/MarksGrid.jsx";
-import { getMyStudent, updateMyStudent } from "../../api/students";
-import { Calendar, BookOpen, CheckCircle2, Clock, Bell, TrendingUp, FileText, AlertCircle, MessageSquare, MessageCircle, Users } from "lucide-react";
-import Loader from "../../components/ui/Loader";
-import Empty from "../../components/ui/Empty";
+import axios from "axios";
+import {
+  Calendar, BookOpen, CheckCircle2, Bell, TrendingUp, AlertCircle,
+  MessageSquare, Users, Award, Clock, ChevronRight, Star, Target, Book
+} from "lucide-react";
 
 export default function StudentDashboard() {
-  const nav = useNavigate();
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [student, setStudent] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // editable fields local state
+  // ✅ Fetch student data from backend
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/students/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStudent(res.data.student);
+      } catch (err) {
+        console.error("Failed to load student:", err);
+        setError("Failed to load student data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudent();
+  }, []);
+
+  // ✅ Avoid accessing student before it’s loaded
   const [form, setForm] = useState({
     phone: "",
     year: "",
@@ -26,214 +40,440 @@ export default function StudentDashboard() {
     emergencyContactName: "",
     emergencyContactPhone: "",
   });
-  const [avatarFile, setAvatarFile] = useState(null);
-
-  // demo schedule & marks for now (replace with real data from API later)
-  const [schedule, setSchedule] = useState([]);
-  const [marks, setMarks] = useState([]);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setError("");
-        const res = await getMyStudent();
-        if (!alive) return;
-        const s = res.student || null;
-        setStudent(s);
-        setForm(f => ({
-          ...f,
-          phone: s?.phone || "",
-          year: s?.year || "",
-          about: s?.about || "",
-          emergencyContactName: s?.emergencyContact?.name || "",
-          emergencyContactPhone: s?.emergencyContact?.phone || "",
-        }));
+    if (student) {
+      setForm({
+        phone: student.phone || "",
+        year: student.year || "",
+        about: student.about || "",
+        emergencyContactName: student.emergencyContact?.name || "",
+        emergencyContactPhone: student.emergencyContact?.phone || "",
+      });
+    }
+  }, [student]);
 
-        // TEMP: build schedule + marks from student.courses (if available) or demo
-        const demoSched = [
-          { day: "Mon", start: "09:00", end: "10:30", title: "SEN381", location: "B201" },
-          { day: "Tue", start: "11:00", end: "12:30", title: "PRG381", location: "C105" },
-          { day: "Wed", start: "13:00", end: "15:00", title: "DBD382", location: "Lab 2" },
-          { day: "Thu", start: "10:00", end: "11:30", title: "ELD380", location: "A304" },
-          { day: "Fri", start: "08:00", end: "10:00", title: "NET380", location: "B001" },
-        ];
-        setSchedule(s?.schedule || demoSched);
-
-        const demoMarks = [
-          { code: "SEN381", name: "Software Engineering", overall: 78, terms: [
-            { label: "Test 1", score: 75 }, { label: "Assignment", score: 82 }, { label: "Project", score: 80 }
-          ]},
-          { code: "PRG381", name: "Programming 3", overall: 66, terms: [
-            { label: "Test 1", score: 60 }, { label: "Lab", score: 72 }, { label: "Project", score: 65 }
-          ]},
-          { code: "DBD382", name: "Databases", overall: 85, terms: [
-            { label: "Test 1", score: 88 }, { label: "Assignment", score: 84 }, { label: "Project", score: 83 }
-          ]},
-        ];
-        setMarks(s?.marks || demoMarks);
-
-      } catch (err) {
-        setError(err?.friendlyMessage || err?.message || "Failed to load your profile.");
-      } finally { if (alive) setLoading(false); }
-    })();
-    return () => { alive = false; };
-  }, []);
-
-  async function onSave(e) {
-    e?.preventDefault();
+  const onSave = async (e) => {
+    e.preventDefault();
     setSaving(true);
-    setError("");
-    const patch = {
-      phone: form.phone,
-      year: form.year,
-      about: form.about,
-      emergencyContact: {
-        name: form.emergencyContactName,
-        phone: form.emergencyContactPhone,
-      },
-      // NOTE: avatar will be uploaded via a dedicated endpoint later
-    };
-
-    const prev = student;
     try {
-      // optimistic UI
-      setStudent((s) => ({ ...s, ...patch, avatarUrl: s?.avatarUrl }));
-      // TEMP: if avatar chosen, you’ll POST it to /api/students/me/avatar (FormData)
-      // await uploadAvatar(avatarFile)
-      const res = await updateMyStudent(patch);
-      setStudent(res.student || prev);
-      setAvatarFile(null);
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/students/me`, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Profile updated successfully!");
     } catch (err) {
-      setStudent(prev);
-      setError(err?.friendlyMessage || "Could not save changes.");
-    } finally { setSaving(false); }
-  }
-
-  // Mock data 
-  const currentCourses = student?.courses || [];
-  const completedCourses = []; // Add completed courses from API
-  const upcomingEvents = [
-    { id: 1, title: "Assignment Due: React Project", date: "2025-10-25", type: "assignment" },
-    { id: 2, title: "Midterm Exam: Database Systems", date: "2025-10-28", type: "exam" },
-    { id: 3, title: "Group Presentation", date: "2025-10-30", type: "presentation" },
-  ];
-  const recentGrades = [
-    { course: "Web Development", assignment: "Project 1", grade: "A-", date: "2025-10-15" },
-    { course: "Data Structures", assignment: "Quiz 3", grade: "B+", date: "2025-10-12" },
-  ];
-
-  // Forum notifications 
-  const forumNotifications = [
-    { id: 1, type: "reply", thread: "Help with React Hooks", author: "John Doe", time: "2 hours ago", unread: true },
-    { id: 2, type: "mention", thread: "Group Project Discussion", author: "Jane Smith", time: "5 hours ago", unread: true },
-    { id: 3, type: "reply", thread: "Database Assignment Help", author: "Mike Johnson", time: "1 day ago", unread: false },
-  ];
-
-  const unreadMessages = 3; // Replace with real count from API
-  const unreadForumNotifs = forumNotifications.filter(n => n.unread).length;
-
-  // Calendar state
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    
-    return { daysInMonth, startingDayOfWeek, year, month };
+      console.error(err);
+      setError("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
-  const monthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"];
+  if (loading) return <div className="p-10 text-center">Loading student data...</div>;
+  if (error) return <div className="p-10 text-red-600 text-center">{error}</div>;
+  if (!student) return <div className="p-10 text-center">No student found.</div>;
 
-  if (loading) return <Loader label="Fetching your student profile..." />;
-  if (!student) return <Empty title="No student profile" hint="Ask admin to attach your user to a student record." />;
 
-  const stats = [
-    { label: "Current Courses", value: currentCourses.length, icon: BookOpen, color: "bg-primary" },
-    { label: "Completed", value: completedCourses.length, icon: CheckCircle2, color: "bg-accent" },
-    { label: "Upcoming Events", value: upcomingEvents.length, icon: Calendar, color: "bg-lavender" },
-    { label: "Average Grade", value: "B+", icon: TrendingUp, color: "bg-redbrown" },
+  const schedule = [
+    { day: "Mon", start: "09:00", end: "10:30", title: "SEN381", location: "B201", color: "bg-blue-500" },
+    { day: "Tue", start: "11:00", end: "12:30", title: "PRG381", location: "C105", color: "bg-purple-500" },
+    { day: "Wed", start: "13:00", end: "15:00", title: "DBD382", location: "Lab 2", color: "bg-green-500" },
+    { day: "Thu", start: "10:00", end: "11:30", title: "ELD380", location: "A304", color: "bg-orange-500" },
+    { day: "Fri", start: "08:00", end: "10:00", title: "NET380", location: "B001", color: "bg-pink-500" },
   ];
 
+  const marks = [
+    { code: "SEN381", name: "Software Engineering", overall: 78, terms: [
+      { label: "Test 1", score: 75 }, { label: "Assignment", score: 82 }, { label: "Project", score: 80 }
+    ]},
+    { code: "PRG381", name: "Programming 3", overall: 66, terms: [
+      { label: "Test 1", score: 60 }, { label: "Lab", score: 72 }, { label: "Project", score: 65 }
+    ]},
+    { code: "DBD382", name: "Databases", overall: 85, terms: [
+      { label: "Test 1", score: 88 }, { label: "Assignment", score: 84 }, { label: "Project", score: 83 }
+    ]},
+  ];
+
+  const upcomingEvents = [
+    { id: 1, title: "Assignment Due: React Project", date: "Oct 25", type: "assignment", priority: "high" },
+    { id: 2, title: "Midterm Exam: Database Systems", date: "Oct 28", type: "exam", priority: "high" },
+    { id: 3, title: "Group Presentation", date: "Oct 30", type: "presentation", priority: "medium" },
+    { id: 4, title: "Lab Submission: Network Config", date: "Nov 02", type: "assignment", priority: "low" },
+  ];
+
+  const recentGrades = [
+    { course: "Web Development", assignment: "Project 1", grade: "A-", score: 88, date: "Oct 15" },
+    { course: "Data Structures", assignment: "Quiz 3", grade: "B+", score: 85, date: "Oct 12" },
+    { course: "Software Eng", assignment: "Test 2", grade: "A", score: 92, date: "Oct 10" },
+  ];
+
+  const stats = [
+    { label: "Current Courses", value: student.courses.length, icon: BookOpen, color: "from-blue-500 to-blue-600", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+    { label: "Average Grade", value: "B+", icon: TrendingUp, color: "from-green-500 to-green-600", iconBg: "bg-green-100", iconColor: "text-green-600" },
+    { label: "Upcoming Events", value: upcomingEvents.length, icon: Calendar, color: "from-purple-500 to-purple-600", iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+    { label: "Completed Tasks", value: "12/15", icon: CheckCircle2, color: "from-orange-500 to-orange-600", iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+  ];
+
+  function onSave(e) {
+    e?.preventDefault();
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      alert("Profile updated successfully!");
+    }, 1000);
+  }
+
   return (
-    <div className="max-w-4xl mx-auto py-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Student Dashboard</h1>
-          <p className="text-primary/70 text-sm">Welcome, {student.name || student.fullName || "Student"}.</p>
-        </div>
-      </header>
-
-      {error ? (
-        <div className="rounded border border-red-400/60 p-3 text-sm text-red-700 bg-red-50">{error}</div>
-      ) : null}
-
-      <section className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">Profile</h3>
-          <div className="text-sm space-y-1">
-            <p><span className="font-medium">Email:</span> {student.email}</p>
-            <p><span className="font-medium">Student #:</span> {student.studentNumber ?? "—"}</p>
-            <p><span className="font-medium">Year:</span> {student.year || "—"}</p>
-            <p><span className="font-medium">Phone:</span> {student.phone || "—"}</p>
-          </div>
-        </div>
-
-        <form onSubmit={onSave} className="rounded-xl border p-4">
-          <h3 className="font-semibold mb-2">Edit details</h3>
-          <div className="space-y-3">
-            <label className="block text-sm">
-              <span>Phone</span>
-              <input className="mt-1 w-full rounded border px-3 py-2" value={form.phone}
-                     onChange={(e)=>setForm({...form, phone:e.target.value})}/>
-            </label>
-            <label className="block text-sm">
-              <span>Year</span>
-              <input className="mt-1 w-full rounded border px-3 py-2" value={form.year}
-                     onChange={(e)=>setForm({...form, year:e.target.value})}/>
-            </label>
-            <label className="block text-sm">
-              <span>About</span>
-              <textarea className="mt-1 w-full rounded border px-3 py-2" rows="3" value={form.about}
-                        onChange={(e)=>setForm({...form, about:e.target.value})}/>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                <span>Emergency contact name</span>
-                <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactName}
-                       onChange={(e)=>setForm({...form, emergencyContactName:e.target.value})}/>
-              </label>
-              <label className="block text-sm">
-                <span>Emergency contact phone</span>
-                <input className="mt-1 w-full rounded border px-3 py-2" value={form.emergencyContactPhone}
-                       onChange={(e)=>setForm({...form, emergencyContactPhone:e.target.value})}/>
-              </label>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header with gradient */}
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold border-4 border-white/30">
+                {student.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">Welcome back, {student.name.split(' ')[0]}!</h1>
+                <p className="text-blue-100 mt-1">Student ID: {student.studentNumber} • {student.year}</p>
+              </div>
             </div>
-            <button className="px-4 py-2 rounded bg-accent text-primary-900 disabled:opacity-60" disabled={saving}>
-              {saving ? "Saving..." : "Save changes"}
-            </button>
+            <div className="flex items-center gap-3">
+              <button className="relative p-3 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition border border-white/30">
+                <Bell className="w-5 h-5 text-white" />
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">
+                  3
+                </span>
+              </button>
+              <button className="relative p-3 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition border border-white/30">
+                <MessageSquare className="w-5 h-5 text-white" />
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">
+                  5
+                </span>
+              </button>
+            </div>
           </div>
-        </form>
-      </section>
+        </div>
+      </div>
 
-      <section className="rounded-xl border p-4">
-        <h3 className="font-semibold mb-2">Enrolled Courses</h3>
-        {Array.isArray(student.courses) && student.courses.length ? (
-          <ul className="text-sm list-disc pl-5 space-y-1">
-            {student.courses.map((c) => (
-              <li key={c._id || c.id}>{c.code} — {c.name}</li>
+      {/* Tab Navigation */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 overflow-x-auto">
+            {[
+              { id: "overview", label: "Overview", icon: Target },
+              { id: "courses", label: "My Courses", icon: Book },
+              { id: "schedule", label: "Schedule", icon: Calendar },
+              { id: "grades", label: "Grades", icon: Award },
+              { id: "profile", label: "Profile", icon: Users },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition border-b-4 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "border-blue-600 text-blue-600 bg-blue-50"
+                    : "border-transparent text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
             ))}
-          </ul>
-        ) : (
-          <Empty title="No courses" hint="Once your admin enrolls you, they’ll appear here." />
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-200 p-4 text-sm text-red-700 bg-red-50 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
         )}
-      </section>
+
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <div className="space-y-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stats.map((stat, idx) => (
+                <div key={idx} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                  <div className={`h-2 bg-gradient-to-r ${stat.color}`}></div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`${stat.iconBg} p-3 rounded-xl group-hover:scale-110 transition-transform`}>
+                        <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-sm font-medium mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Upcoming Events */}
+              <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                    Upcoming Events
+                  </h2>
+                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button>
+                </div>
+                <div className="space-y-3">
+                  {upcomingEvents.map(event => (
+                    <div key={event.id} className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl hover:shadow-md transition-all group cursor-pointer">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        event.priority === 'high' ? 'bg-red-100' : event.priority === 'medium' ? 'bg-orange-100' : 'bg-green-100'
+                      }`}>
+                        {event.type === 'exam' ? '📝' : event.type === 'assignment' ? '📄' : '🎤'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition">{event.title}</p>
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" />
+                          {event.date}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Grades */}
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Star className="w-6 h-6 text-yellow-500" />
+                    Recent Grades
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {recentGrades.map((grade, idx) => (
+                    <div key={idx} className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-semibold text-gray-900 text-sm">{grade.course}</p>
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                          grade.score >= 90 ? 'bg-green-100 text-green-700' :
+                          grade.score >= 80 ? 'bg-blue-100 text-blue-700' :
+                          'bg-orange-100 text-orange-700'
+                        }`}>
+                          {grade.grade}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600">{grade.assignment}</p>
+                      <p className="text-xs text-gray-500 mt-1">{grade.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* This Week's Schedule Preview */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Clock className="w-6 h-6 text-purple-600" />
+                This Week's Schedule
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {schedule.map((item, idx) => (
+                  <div key={idx} className="p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:shadow-md transition-all">
+                    <p className="text-xs font-bold text-gray-500 mb-2">{item.day}</p>
+                    <div className={`w-full h-1 ${item.color} rounded-full mb-2`}></div>
+                    <p className="font-bold text-gray-900 text-sm mb-1">{item.title}</p>
+                    <p className="text-xs text-gray-600">{item.start} - {item.end}</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.location}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Courses Tab */}
+        {activeTab === "courses" && (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {student.courses.map((course) => (
+                <div key={course._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group cursor-pointer">
+                  <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <BookOpen className="w-12 h-12 text-white opacity-80" />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition">{course.code}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{course.name}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">View Details</span>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Schedule Tab */}
+        {activeTab === "schedule" && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Weekly Schedule</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="py-4 px-4 text-left font-bold text-gray-700">Day</th>
+                    <th className="py-4 px-4 text-left font-bold text-gray-700">Time</th>
+                    <th className="py-4 px-4 text-left font-bold text-gray-700">Course</th>
+                    <th className="py-4 px-4 text-left font-bold text-gray-700">Location</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.map((item, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 hover:bg-blue-50 transition">
+                      <td className="py-4 px-4">
+                        <span className="font-semibold text-gray-900">{item.day}</span>
+                      </td>
+                      <td className="py-4 px-4 text-gray-600">{item.start} - {item.end}</td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 ${item.color} rounded-full`}></div>
+                          <span className="font-medium text-gray-900">{item.title}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-600">{item.location}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Grades Tab */}
+        {activeTab === "grades" && (
+          <div className="space-y-6">
+            {marks.map((course) => (
+              <div key={course.code} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{course.code}</h3>
+                    <p className="text-gray-600 text-sm">{course.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-4xl font-bold ${
+                      course.overall >= 80 ? 'text-green-600' :
+                      course.overall >= 70 ? 'text-blue-600' :
+                      course.overall >= 60 ? 'text-orange-600' :
+                      'text-red-600'
+                    }`}>
+                      {course.overall}%
+                    </div>
+                    <p className="text-sm text-gray-500">Overall</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  {course.terms.map((term, i) => (
+                    <div key={i} className="p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl text-center">
+                      <p className="text-xs text-gray-600 mb-2">{term.label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{term.score}%</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Profile Tab */}
+        {activeTab === "profile" && (
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Profile Information</h3>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="text-gray-500 text-xs">Email</p>
+                  <p className="font-medium text-gray-900">{student.email}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Student Number</p>
+                  <p className="font-medium text-gray-900">{student.studentNumber}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Year</p>
+                  <p className="font-medium text-gray-900">{student.year}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Phone</p>
+                  <p className="font-medium text-gray-900">{student.phone}</p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={onSave} className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Edit Profile</h3>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Phone</span>
+                  <input 
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                    value={form.phone}
+                    onChange={(e)=>setForm({...form, phone:e.target.value})}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Year</span>
+                  <input 
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                    value={form.year}
+                    onChange={(e)=>setForm({...form, year:e.target.value})}
+                  />
+                </label>
+              </div>
+              <label className="block mb-4">
+                <span className="text-sm font-medium text-gray-700 mb-1 block">About</span>
+                <textarea 
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                  rows="3" 
+                  value={form.about}
+                  onChange={(e)=>setForm({...form, about:e.target.value})}
+                />
+              </label>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Name</span>
+                  <input 
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                    value={form.emergencyContactName}
+                    onChange={(e)=>setForm({...form, emergencyContactName:e.target.value})}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 mb-1 block">Emergency Contact Phone</span>
+                  <input 
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                    value={form.emergencyContactPhone}
+                    onChange={(e)=>setForm({...form, emergencyContactPhone:e.target.value})}
+                  />
+                </label>
+              </div>
+              <button 
+                className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60" 
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -13,56 +13,36 @@ export default function TutorHome() {
   const [unread, setUnread] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setError("");
-        const r = await getTutorHome();
-        if (!alive) return;
+ useEffect(() => {
+  let alive = true;
+  (async () => {
+    try {
+      setError("");
+      const r = await getTutorHome();
+      if (!alive) return;
 
-        const events = normalizeEvents(Array.isArray(r?.schedule) ? r.schedule : []);
-        setSchedule(events);
-        setUnread(Array.isArray(r?.unread?.items) ? r.unread.items : []);
-        const next = r?.nextSession || r?.nextClass || findNextFromSchedule(events);
-        setNextSession(next || null);
+      const events = normalizeEvents(Array.isArray(r?.schedule) ? r.schedule : []);
+      setSchedule(events);
+      setUnread(Array.isArray(r?.unread?.items) ? r.unread.items : []);
+      const next = r?.nextSession || r?.nextClass || findNextFromSchedule(events);
+      setNextSession(next || null);
+    } catch (e) {
+      console.warn("⚠️ TutorHome: failed to load data", e);
+      // Instead of making another API call that could also fail,
+      // just show an empty schedule and continue
+      setSchedule([]);
+      setUnread([]);
+      setNextSession(null);
+      setError("Check out more, later!");
+    } finally {
+      if (alive) setLoading(false);
+    }
+  })();
+  return () => {
+    alive = false;
+  };
+}, []);
 
-        if (events.length === 0) {
-          try {
-            const [sched, msgs] = await Promise.all([
-              getMyTeachingSchedule(),
-              unread.length ? Promise.resolve({ items: unread }) : getUnreadPreview(3),
-            ]);
-            if (!alive) return;
-            const evts = normalizeEvents(Array.isArray(sched?.events) ? sched.events : []);
-            setSchedule(evts);
-            setUnread(Array.isArray(msgs?.items) ? msgs.items : unread);
-            setNextSession(
-              sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null
-            );
-          } catch {
-            /* keep existing state */
-          }
-        }
-      } catch (e) {
-        try {
-          const [sched, msgs] = await Promise.all([getMyTeachingSchedule(), getUnreadPreview(3)]);
-          if (!alive) return;
-          const evts = normalizeEvents(Array.isArray(sched?.events) ? sched.events : []);
-          setSchedule(evts);
-          setUnread(Array.isArray(msgs?.items) ? msgs.items : []);
-          setNextSession(sched?.nextSession || sched?.nextClass || findNextFromSchedule(evts) || null);
-        } catch (e2) {
-          setError(e2.message || "Failed to load home.");
-        }
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   return (
     <div className="space-y-6">

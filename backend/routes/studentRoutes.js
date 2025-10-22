@@ -1,3 +1,4 @@
+//backend/routes/studentRoutes.js
 import express from "express";
 import { auth } from "../middleware/auth.js";
 import Student from "../model/Student.js";
