@@ -33,3 +33,9 @@ export async function deleteStudent(id) {
   const { data } = await api.delete(`/student/${id}`);
   return data; // { ok: true }
 }
+
+export async function listAllStudents(params = {}) {
+  const { page = 1 } = params;
+  const { data } = await api.get("/students", { params: { page } });
+  return data; 
+}

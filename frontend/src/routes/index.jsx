@@ -1,4 +1,4 @@
-//frontend/src/routes/index.jsx
+// frontend/src/routes/index.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -31,6 +31,9 @@ import MaterialsLibrary from "../pages/tutor/MaterialsLibrary.jsx";
 import StudentDashboard from "../pages/student/StudentDashboard.jsx";
 import TutorDashboard   from "../pages/tutor/TutorDashboard.jsx";
 import AdminDashboard   from "../pages/admin/AdminDashboard.jsx";
+
+// Admin tools
+import CourseManager from "../pages/admin/CourseManager.jsx"; // ← NEW
 
 // Messages Center
 import MessagesCenter from "../pages/messages/MessagesCenter.jsx";
@@ -113,7 +116,8 @@ export default function AppRoutes() {
         {/* Admin area */}
         <Route element={<RoleGuard allow={["admin"]} />}>
           <Route path="admin" element={<AdminHome />} />
-          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />   {/* ← NEW */}
+          <Route path="admin/courses" element={<CourseManager />} />      {/* ← NEW */}
           {/* Admin-only creation pages */}
           <Route path="admin/register-admin" element={<RegisterAdmin />} />
           <Route path="admin/register-tutor" element={<RegisterTutor />} />
