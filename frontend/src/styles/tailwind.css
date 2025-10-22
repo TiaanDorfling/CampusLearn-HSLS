@@ -17,9 +17,26 @@
   --font-button: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
+.dark {
+  --color-primary: #231536;
+  --color-primary-800: #271231;
+  --color-primary-900: #0f0713;
+  --color-accent: #b95a7d;
+  --color-lavender: #8f77e9;
+  --color-cream: #2e2838;
+  --color-redbrown: #9b1d03;
+  --color-beige: #2b2732;
+  background-color: var(--color-cream);
+}
+
 /* Global niceties */
 html, body, #root { height: 100%; }
 :root { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/*transition*/
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 
 /* Optional: softer inner panel look */
 .shadow-inner { box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.05); }
