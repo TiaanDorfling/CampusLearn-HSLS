@@ -43,7 +43,21 @@ export default function Profile() {
     try {
       setSaving(true);
       setError("");
-      await updateMyStudent(form);
+
+      const patchPayload = {
+        about: form.about,
+        phone: form.phone,
+        year: form.year,
+        studentNumber: form.studentNumber,
+        // CORRECTLY NEST THE emergencyContact field
+        emergencyContact: {
+          phone: form.emergencyContactPhone, // Assuming you changed the input name
+          // Include 'name' here if you have an input for it: name: form.emergencyContactName,
+        },
+        // You may need to remove any other fields not meant for the PATCH request
+      };
+
+      await updateMyStudent(patchPayload);
       const updated = await getMyStudent();
       setProfile(updated.student || updated);
       alert("Profile saved");
