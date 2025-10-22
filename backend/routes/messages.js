@@ -128,7 +128,8 @@ router.get("/:conversationId", auth(true), async (req, res) => {
 
 /**
  * PUT /api/messages/read
- * Mark a message as read
+ * Mark a single message as read
+ * body: { messageId }
  */
 router.put("/read", auth(true), async (req, res) => {
   try {
@@ -143,10 +144,85 @@ router.put("/read", auth(true), async (req, res) => {
       await message.save();
     }
 
+    // also flip any message notifications for this message/user
+    await Notification.updateMany(
+      { user: userId, type: "message", "data.messageId": String(messageId) },
+      { $set: { read: true } }
+    );
+
     return res.status(200).json({ message });
   } catch (err) {
     console.error("Mark read error:", err);
     return res.status(500).json({ error: "Failed to mark message as read" });
+  }
+});
+
+/**
+ * PUT /api/messages/read-many
+ * Mark multiple messages as read (bulk)
+ * body: { messageIds: string[] }
+ */
+router.put("/read-many", auth(true), async (req, res) => {
+  try {
+    const { messageIds } = req.body || {};
+    const userId = req.user._id;
+
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return res.status(400).json({ error: "messageIds (array) required" });
+    }
+
+    const ids = messageIds.map(String);
+
+    const result = await Message.updateMany(
+      { _id: { $in: ids }, isReadBy: { $ne: userId } },
+      { $addToSet: { isReadBy: userId } }
+    );
+
+    // also flip related message notifications for this user
+    await Notification.updateMany(
+      { user: userId, type: "message", "data.messageId": { $in: ids } },
+      { $set: { read: true } }
+    );
+
+    // optional: return the updated docs (handy for the UI to reconcile)
+    const updated = await Message.find({ _id: { $in: ids } }).lean();
+
+    return res.status(200).json({ ok: true, modifiedCount: result.modifiedCount, items: updated });
+  } catch (err) {
+    console.error("Mark read-many error:", err);
+    return res.status(500).json({ error: "Failed to bulk mark messages as read" });
+  }
+});
+
+/**
+ * PUT /api/messages/:conversationId/read-all
+ * Mark ALL messages in a conversation as read for the current user
+ */
+router.put("/:conversationId/read-all", auth(true), async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user._id;
+
+    // mark all messages in the conversation as read for this user
+    const result = await Message.updateMany(
+      { conversation: conversationId, isReadBy: { $ne: userId } },
+      { $addToSet: { isReadBy: userId } }
+    );
+
+    // mark any message notifications in this conversation as read for this user
+    const ids = await Message.find({ conversation: conversationId }, { _id: 1 }).lean();
+    const msgIds = ids.map((m) => String(m._id));
+    if (msgIds.length) {
+      await Notification.updateMany(
+        { user: userId, type: "message", "data.messageId": { $in: msgIds } },
+        { $set: { read: true } }
+      );
+    }
+
+    return res.status(200).json({ ok: true, modifiedCount: result.modifiedCount });
+  } catch (err) {
+    console.error("Mark conversation read-all error:", err);
+    return res.status(500).json({ error: "Failed to mark conversation as read" });
   }
 });
 
