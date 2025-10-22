@@ -33,7 +33,7 @@ export default function TutorHome() {
       setSchedule([]);
       setUnread([]);
       setNextSession(null);
-      setError("Could not load your teaching schedule. Please try again later.");
+      setError("Check out more, later!");
     } finally {
       if (alive) setLoading(false);
     }
