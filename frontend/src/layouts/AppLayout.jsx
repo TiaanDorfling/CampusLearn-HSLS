@@ -82,7 +82,7 @@ export default function AppLayout() {
 
       {/* Footer */}
       <footer className="mt-4 bg-white/90 backdrop-blur-sm border-t border-primary/10">
-        <div className="h-[3px] bg-gradient-to-r from-lavender via-cream to-white" />
+        <div className="h-[3px] bg-linear-to-r from-lavender via-cream to-white" />
         <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <img src={logo} alt="" className="h-6 w-6" />
