@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getMyTutor, getTutorStudents } from "../../api/tutors";
-import { Calendar, BookOpen, Users, Clock, Bell, MessageSquare, MessageCircle, FileText, AlertCircle, Search, GraduationCap } from "lucide-react";
+import { Calendar, BookOpen, Users, Clock, Bell, MessageSquare, FileText, AlertCircle } from "lucide-react";
 import Loader from "../../components/ui/Loader";
 import Empty from "../../components/ui/Empty";
 
 export default function TutorDashboard() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [tutor, setTutor] = useState(null);
@@ -110,7 +111,6 @@ export default function TutorDashboard() {
 
   return (
     <div className="min-h-screen bg-cream">
-   
       <div className="bg-primary border-b-4 border-primary-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -119,11 +119,9 @@ export default function TutorDashboard() {
               <p className="text-beige mt-1">Manage your courses and students</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Quick access buttons for messages, forums, and alerts */}
-              
               {/* Messages */}
               <button 
-                onClick={() => window.location.href = '/tutor/messages'}
+                onClick={() => navigate('/app/messages')}
                 className="relative flex items-center gap-2 px-4 py-2 bg-accent text-primary-900 rounded-lg hover:bg-accent/90 transition font-button font-medium shadow-lg"
               >
                 <MessageSquare className="w-4 h-4" />
@@ -137,7 +135,7 @@ export default function TutorDashboard() {
               
               {/* Forums */}
               <button 
-                onClick={() => window.location.href = '/tutor/forums'}
+                onClick={() => navigate('/app/forum')}
                 className="relative flex items-center gap-2 px-4 py-2 bg-lavender text-primary-900 rounded-lg hover:bg-lavender/90 transition font-button font-medium shadow-lg"
               >
                 <Users className="w-4 h-4" />
@@ -179,27 +177,18 @@ export default function TutorDashboard() {
 
         {/* Main content area */}
         <div className="grid lg:grid-cols-3 gap-8">
-    
           <div className="lg:col-span-2 space-y-8">
             {/* Teaching calendar */}
-            ...
             {/* Courses section */}
-            ...
             {/* Student list */}
-            ...
           </div>
 
           <div className="space-y-8">
             {/* Tutor profile summary */}
-            ...
             {/* Forum notifications */}
-            ...
             {/* Upcoming classes */}
-            ...
             {/* Pending assignments */}
-            ...
             {/* Recent activity */}
-            ...
           </div>
         </div>
       </div>
